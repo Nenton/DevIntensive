@@ -1,4 +1,4 @@
-package com.nenton.devintensive;
+package com.softdesign.devintensive;
 
 import org.junit.Test;
 
