@@ -260,21 +260,17 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent">
                 <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     style="@style/text"
                     android:fontFamily="sans-serif-condensed"
                     android:id="@+id/about_text"
-                    android:text="Студент. Всем добра и позитива =)."
+                    android:ellipsize="end"
+                    android:text="Студент. Всем добра и позитива. Привет всем из Армавира =)."
                     android:hint="О себе"
                     />
 
             </android.support.design.widget.TextInputLayout>
 
         </LinearLayout>
-        <ImageView
-            style="@style/icon.right"
-            android:src="@drawable/ic_send_black_24dp"/>
     </LinearLayout>
 </LinearLayout>
 </ScrollView>
