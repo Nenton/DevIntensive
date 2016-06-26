@@ -1,12 +1,20 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_accent</item>
     </style>
+    <style name="AppTheme.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+
+    </style>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
     <style name="icon">
         <item name="android:layout_width">@dimen/size_small_24</item>
@@ -27,7 +35,7 @@
 
     <style name="linear_layout">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">@dimen/size_large_72</item>
+        <item name="android:layout_height">wrap_content</item>
         <item name="android:orientation">vertical</item>
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">center_vertical</item>
@@ -54,6 +62,10 @@
     <style name="margin_tools_bar">
         <item name="android:textColor">#ffffff</item>
         <item name="android:layout_weight">0.5</item>
+    </style>
+    
+    <style name="custom_progress_dialog">
+        <item name="android:fullDark">@android:color/transparent</item>
     </style>
 
 </resources>
