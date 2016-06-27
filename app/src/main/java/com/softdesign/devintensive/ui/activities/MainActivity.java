@@ -16,6 +16,8 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -57,11 +59,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         setContentView(R.layout.activity_main);
 
         mDataManager = DataManager.getInstanse();
-
-//        mImageView = (ImageView)findViewById(R.id.avatar);
-//        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
-//        bitmap = getRoundedBitmap(bitmap);
-//        mImageView.setImageBitmap(bitmap);
 
         mCoordinatorLayout = (CoordinatorLayout)findViewById(R.id.main_coordinator_layout);
         mToolbar = (Toolbar)findViewById(R.id.toolbar);
@@ -185,6 +182,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                 return false;
             }
         });
+
+        mImageView = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.avatar);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+        RoundedBitmapDrawable rBD = RoundedBitmapDrawableFactory.create(getResources(),bitmap);
+        rBD.setCornerRadius(Math.max(bitmap.getHeight(),bitmap.getWidth())/2.0f);
+        mImageView.setImageDrawable(rBD);
     }
 
     private void changeEditMode (int mode){
@@ -235,6 +238,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                     mCurrentEditMode = 1;
                 }
                 break;
+        }
+
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if (mNavigationDrawer!=null && mNavigationDrawer.isDrawerVisible(GravityCompat.START)){
+            mNavigationDrawer.closeDrawer(GravityCompat.START);
+        }
+        else {
+            super.onBackPressed();
         }
 
     }

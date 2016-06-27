@@ -21,6 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/color_primary">
+
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
@@ -42,101 +43,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:titleTextColor="@color/white"
-                app:layout_collapseMode="pin"/>
+                app:layout_collapseMode="pin">
+
+            </android.support.v7.widget.Toolbar>
 
         </android.support.design.widget.CollapsingToolbarLayout>
-
 
     </android.support.design.widget.AppBarLayout>
 
 <android.support.v4.widget.NestedScrollView
+    android:id="@+id/nested_scroll_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/grey"
-        android:paddingTop="@dimen/spacing_medial_24"
-        android:paddingBottom="@dimen/spacing_medial_24">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/size_large_72"
-            android:orientation="vertical"
-            android:layout_gravity="center_vertical"
-            >
-            <TextView
-                style="@style/margin_tools_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/spacing_medial_24"
-                android:gravity="bottom|center_horizontal"
-                android:text="51"/>
-            <TextView
-                style="@style/margin_tools_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="top|center_horizontal"
-                android:text="Рейтинг"/>
-        </LinearLayout>
-        <View
-            style="@style/divider_vertical">
-
-        </View>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="2"
-            android:layout_height="@dimen/size_large_72"
-            android:orientation="vertical"
-            android:layout_gravity="center_vertical">
-            <TextView
-                style="@style/margin_tools_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/spacing_medial_24"
-                android:gravity="bottom|center_horizontal"
-                android:text="51"/>
-            <TextView
-                style="@style/margin_tools_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="top|center_horizontal"
-                android:text="Написано строк кода"/>
-        </LinearLayout>
-        <View
-            style="@style/divider_vertical">
-
-        </View>
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/size_large_72"
-            android:orientation="vertical"
-            android:layout_gravity="center_vertical">
-            <TextView
-                style="@style/margin_tools_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/spacing_medial_24"
-                android:gravity="bottom|center_horizontal"
-                android:text="51"/>
-            <TextView
-                style="@style/margin_tools_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Проектов"
-                android:gravity="top|center_horizontal"/>
-        </LinearLayout>
-    </LinearLayout>
+    <include layout="@layout/nested_scroll"></include>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -144,31 +70,37 @@
         android:orientation="horizontal"
         android:layout_marginTop="@dimen/spacing_small_8"
         android:layout_marginBottom="@dimen/spacing_small_8">
+
         <ImageView
             style="@style/icon.left"
             android:src="@drawable/ic_call_black_24dp"
             />
+
         <LinearLayout
             style="@style/linear_layout">
+
             <android.support.design.widget.TextInputLayout
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent">
+
                 <EditText
                     style="@style/text"
                     android:id="@+id/phone_text"
                     android:inputType="phone"
                     android:hint="Мобильный телефон"
                     android:fontFamily="sans-serif-condensed"
-                    android:text="891247080"
-                    />
+                    android:text="891247080"/>
 
             </android.support.design.widget.TextInputLayout>
 
         </LinearLayout>
+
         <ImageView
             style="@style/icon.right"
             android:src="@drawable/ic_phone_in_talk_black_24dp"/>
+
     </LinearLayout>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/line_height"
