@@ -1,6 +1,16 @@
 package com.softdesign.devintensive.ui.activities;
 
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -17,10 +27,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 
 import com.softdesign.devintensive.R;
+import com.softdesign.devintensive.data.manager.DataManager;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.RoundedAvatarDrawable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,23 +47,31 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     private FloatingActionButton mfab;
     private EditText mUserPhone, mUserEmail, mUserVk, mUserGit, mUserAbout;
     private List<EditText> mUserInfo;
+    private DataManager mDataManager;
+    private ImageView mImageView;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mDataManager = DataManager.getInstanse();
+
+//        mImageView = (ImageView)findViewById(R.id.avatar);
+//        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+//        bitmap = getRoundedBitmap(bitmap);
+//        mImageView.setImageBitmap(bitmap);
+
         mCoordinatorLayout = (CoordinatorLayout)findViewById(R.id.main_coordinator_layout);
         mToolbar = (Toolbar)findViewById(R.id.toolbar);
         mNavigationDrawer = (DrawerLayout) findViewById(R.id.nav_drawer);
         mfab = (FloatingActionButton)findViewById(R.id.fab);
-
         mUserPhone = (EditText)findViewById(R.id.phone_text);
         mUserEmail = (EditText)findViewById(R.id.mail_text);
         mUserVk = (EditText)findViewById(R.id.vk_text);
         mUserGit = (EditText)findViewById(R.id.github_text);
         mUserAbout = (EditText)findViewById(R.id.about_text);
-
         mUserInfo = new ArrayList<>();
 
         mUserInfo.add(mUserPhone);
@@ -62,17 +83,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         mfab.setOnClickListener(this);
         setupToolbar();
         setupDrawer();
+        loadInfoUser();
         Log.d(TAG,"onCreate");
         if (savedInstanceState==null){
-            showProgress();
-            runWithDelay();
-            showSnackBar("Запускается впервые");//Если запускаем впервые
+//            showProgress();
+//            runWithDelay();
+//            showSnackBar("Запускается впервые");//Если запускаем впервые
         } else {
-            showSnackBar("Уже запущено");
+            mCurrentEditMode = savedInstanceState.getInt(ConstantManager.EDIT_CONSTANT_MODE,0);
+            changeEditMode(mCurrentEditMode);
+//            showSnackBar("Уже запущено");
             //Если уже имеет какие-то значения
 
         }
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -100,7 +125,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     protected void onPause() {
         super.onPause();
         Log.d(TAG,"onPause");
-
     }
 
     @Override
@@ -124,6 +148,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putInt(ConstantManager.EDIT_CONSTANT_MODE,mCurrentEditMode);
     }
 
     private void runWithDelay(){
@@ -164,26 +189,37 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private void changeEditMode (int mode){
         if (mode == 1) {
+            mfab.setImageResource(R.drawable.ic_done_black_24dp);
             for (EditText editText : mUserInfo) {
                 editText.setFocusable(true);
                 editText.setEnabled(true);
                 editText.setFocusableInTouchMode(true);
             }
         } else {
+            mfab.setImageResource(R.drawable.ic_create_black_24dp);
             for (EditText editText : mUserInfo) {
                 editText.setFocusable(false);
                 editText.setEnabled(false);
                 editText.setFocusableInTouchMode(false);
+                saveInfoUser();
         }
         }
 
     }
 
     private void loadInfoUser() {
-
+        List<String> userInfoFields = mDataManager.getPreferencesManager().loadUserProfileData();
+        for (int i = 0; i < userInfoFields.size(); i++) {
+            mUserInfo.get(i).setText(userInfoFields.get(i));
+        }
     }
 
     private void saveInfoUser() {
+        List<String> userInfoFields = new ArrayList<>();
+        for (EditText userField : mUserInfo) {
+            userInfoFields.add(userField.getText().toString());
+        }
+        mDataManager.getPreferencesManager().saveUserProfileData(userInfoFields);
 
     }
 
@@ -201,5 +237,27 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                 break;
         }
 
+    }
+
+    public static Bitmap getRoundedBitmap(Bitmap bitmap) {
+        final Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        final Canvas canvas = new Canvas(output);
+
+        final int color = Color.RED;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawOval(rectF, paint);
+
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        bitmap.recycle();
+
+        return output;
     }
 }

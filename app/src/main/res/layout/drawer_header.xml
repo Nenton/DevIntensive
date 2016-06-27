@@ -8,9 +8,11 @@
     android:paddingBottom="@dimen/spacing_small_8"
     android:background="@drawable/green_bubbles_wide">
     <ImageView
+        android:id="@+id/avatar"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:background="@color/color_accent"
+        android:background="@drawable/circle_avatar"
+        android:src="@drawable/avatar"
         android:layout_marginTop="@dimen/spacing_normal_16"/>
     <LinearLayout
         android:layout_width="match_parent"
