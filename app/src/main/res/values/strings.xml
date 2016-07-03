@@ -1,3 +1,26 @@
 <resources>
     <string name="app_name">Сусев Сергей</string>
+    <string name="edit_photo_profile">Изменить фотографию</string>
+    <string name="user_dialog_gallery">Загрузить из галлереи</string>
+    <string name="user_dialog_camera">Сделать снимок</string>
+    <string name="user_dialog_cancel">Отмена</string>
+    <string name="user_dialog_title">Изменить фотографию профиля</string>
+    <string name="set_photo_from_gallery">Выберете фото</string>
+    <string name="mobile_phone">Мобильный телефон</string>
+    <string name="mail">E-mail</string>
+    <string name="vk">Ссылка в VK</string>
+    <string name="git">Репозиторий</string>
+    <string name="user_name">Сусев Сергей</string>
+    <string name="email_hint">E-mail</string>
+    <string name="vk_hint">Ссылка в VK</string>
+    <string name="repos_hint">Репозиторий</string>
+    <string name="about_hint">О себе</string>
+    <string name="email_user">sergejsusev@yandex.ru</string>
+    <string name="login_text">ВОЙТИ</string>
+    <string name="get_password">Забыли пароль?</string>
+    <string name="password_text">Пароль</string>
+    <string name="project_text">Проектов</string>
+    <string name="write_code_string_text">Написано строк кода</string>
+    <string name="rating_text">Рейтинг</string>
+
 </resources>
