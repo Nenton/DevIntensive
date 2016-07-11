@@ -18,6 +18,8 @@ public interface ConstantManager {
     String USER_GIT_KEY = "USER_GIT_KEY";
     String USER_ABOUT_KEY = "USER_ABOUT_KEY";
     String USER_PHOTO_KEY = "USER_PHOTO_KEY";
+    String USER_ID_KEY = "USER_ID_KEY";
+    String AUTH_TOKEN_KEY = "AUTH_TOKEN_KEY";
     String ON_CREATE = "onCreate";
     String ON_START = "onStart";
     String ON_RESUME = "onResume";
@@ -49,6 +51,7 @@ public interface ConstantManager {
     String FIRST_FIELD_GIT = "github.com/";
     String FIRST_FIELD_ABOUT = "";
     String FIRST_IMAGE_AVATAR = "android.resource://com.softdesign.devintensive/drawable/avatar";
+    String FIRST_USER_PHOTO = "android.resource://com.softdesign.devintensive/drawable/profile_photo";
 
     int LOAD_PROFILE_PHOTO = 1;
     int REQUEST_CAMERA_PICTURE = 99;
@@ -77,4 +80,10 @@ public interface ConstantManager {
     float RADIUS_ROUND_AVATAR_DELITEL = 2.0f;
     char EMAIL = '@';
     char POINT = '.';
- }
+    String USER_RATING_VALUE = "USER_RATING_VALUE";
+    String USER_CODE_LINES_VALUE = "USER_CODE_LINES_VALUE";
+    String USER_PROJECT_VALUE = "USER_PROJECT_VALUE";
+    String USER_AVATAR_KEY = "USER_AVATAR_KEY";
+    String USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY";
+    String USER_SECOND_NAME_KEY = "USER_SECOND_NAME_KEY";
+}

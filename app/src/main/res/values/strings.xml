@@ -10,12 +10,12 @@
     <string name="mail">E-mail</string>
     <string name="vk">Ссылка в VK</string>
     <string name="git">Репозиторий</string>
-    <string name="user_name">Сусев Сергей</string>
+    <string name="user_name">Иван Иванов</string>
     <string name="email_hint">E-mail</string>
     <string name="vk_hint">Ссылка в VK</string>
     <string name="repos_hint">Репозиторий</string>
     <string name="about_hint">О себе</string>
-    <string name="email_user">sergejsusev@yandex.ru</string>
+    <string name="email_user">mail@mail.mail</string>
     <string name="login_text">ВОЙТИ</string>
     <string name="get_password">Забыли пароль?</string>
     <string name="password_text">Пароль</string>

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout style="@style/navbar_parent"
                 xmlns:android="http://schemas.android.com/apk/res/android">
-
     <ImageView
-        android:id="@+id/avatar"
+        android:id="@+id/avatar_image"
         style="@style/avatar_navbar"/>
 
     <LinearLayout
