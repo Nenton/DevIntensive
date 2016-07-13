@@ -5,8 +5,6 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,8 +22,6 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -38,6 +34,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.manager.DataManager;
@@ -47,11 +44,15 @@ import com.softdesign.devintensive.data.manager.validators.EditTextValidator;
 import com.softdesign.devintensive.data.manager.validators.LengthChecker;
 import com.softdesign.devintensive.data.manager.validators.UrlChecker;
 import com.softdesign.devintensive.data.manager.validators.ValidationSummary;
+import com.softdesign.devintensive.data.network.PhotoUploadService;
+import com.softdesign.devintensive.data.network.ServiceGenerator;
+import com.softdesign.devintensive.utils.AvatarRounded;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,6 +61,13 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
     private static final String TAG = ConstantManager.TAG_PREFIX + "Main Activity";
@@ -87,13 +95,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     List<ImageView> mImageViewFields;
     @BindViews({R.id.phone_text_layout, R.id.mail_text_layout, R.id.vk_text_layout, R.id.github_text_layout})
     List<TextInputLayout> mTextInputLayout;
+    @BindViews({R.id.rating_user, R.id.code_value_user, R.id.project_value_user})
+    List<TextView> mTextValuesUser;
     private int mCurrentEditMode = ConstantManager.EDIT_MODE_CAN;
     private DataManager mDataManager;
     private AppBarLayout.LayoutParams mAppbarParams = null;
     private File mPhotoFile = null;
     private Uri mSelectedImage = null;
     private Boolean mIsEditTextCompleted;
-    private ImageView mImageView;
+    private ImageView mAvatarImage;
 
 
     /**
@@ -112,11 +122,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mfab.setOnClickListener(this);
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
-                .placeholder(R.drawable.avatar)// TODO: 30.06.2016 Сделать пласехолдер transform + crop
+                .placeholder(R.drawable.profile_photo)// TODO: 30.06.2016 Сделать пласехолдер transform + crop
                 .into(mProfileImage);
         setupToolbar();
         setupDrawer();
-        loadInfoUser();
+        loadAvatar();
+        initUserFields();
+        initUserInfoValues();
         Log.d(TAG, ConstantManager.ON_CREATE);
         if (savedInstanceState == null) {
         } else {
@@ -271,12 +283,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 return false;
             }
         });
+        mAvatarImage = (ImageView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.avatar_image);
+        TextView mUserName = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_name_nav);
+        TextView mUserEmail = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_mail_nav);
+        mUserEmail.setText(mDataManager.getPreferencesManager().loadUserProfileData().get(ConstantManager.NUMBER_VIEW_IN_ARRAY_EMAIL));
+        mDataManager.getPreferencesManager().loadFirstSecondNameUser();
+        mUserName.setText(String.format("%s %s", mDataManager.getPreferencesManager().loadFirstSecondNameUser().get(0), mDataManager.getPreferencesManager().loadFirstSecondNameUser().get(1)));
+    }
 
-        mImageView = (ImageView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.avatar);
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
-        RoundedBitmapDrawable rBD = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-        rBD.setCornerRadius(Math.max(bitmap.getHeight(), bitmap.getWidth()) / ConstantManager.RADIUS_ROUND_AVATAR_DELITEL);
-        mImageView.setImageDrawable(rBD);
+    private void loadAvatar() {
+        Picasso.with(this)
+                .load(mDataManager.getPreferencesManager().loadAvatarImage())
+                .placeholder(R.drawable.avatar)// TODO: 30.06.2016 Сделать пласехолдер transform + crop
+                .transform(new AvatarRounded())
+                .into(mAvatarImage);
+//        Bitmap bitmap = mAvatarImage.getDrawingCache();
+//        RoundedBitmapDrawable rBD = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+//        rBD.setCornerRadius(getResources().getDimension(R.dimen.height_width_avatar)/ConstantManager.RADIUS_ROUND_AVATAR_DELITEL);
+//        mAvatarImage.setImageDrawable(rBD);
     }
 
     /**
@@ -303,7 +327,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 editText.setFocusableInTouchMode(false);
             }
             hideProfilePlaceholder();
-            saveInfoUser();
+            saveUserFields();
             unLockToolbar();
             mCollapsingToolbar.setExpandedTitleColor(getResources().getColor(R.color.white));
         }
@@ -347,7 +371,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     /**
      * Load user info in app
      */
-    private void loadInfoUser() {
+    private void initUserFields() {
         List<String> userInfoFields = mDataManager.getPreferencesManager().loadUserProfileData();
         for (int i = 0; i < userInfoFields.size(); i++) {
             mUserInfo.get(i).setText(userInfoFields.get(i));
@@ -357,12 +381,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     /**
      * Save uset info from app
      */
-    private void saveInfoUser() {
+    private void saveUserFields() {
         List<String> userInfoFields = new ArrayList<>();
         for (EditText userField : mUserInfo) {
             userInfoFields.add(userField.getText().toString());
         }
         mDataManager.getPreferencesManager().saveUserProfileData(userInfoFields);
+
+    }
+
+    private void InfoUser() {
 
     }
 
@@ -470,7 +498,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
                 startActivityForResult(takeCaptureIntent, ConstantManager.REQUEST_CAMERA_PICTURE);
-                // TODO: 30.06.2016 Передать фото в интент
+//                uploadPhoto(mPhotoFile.toURI());// TODO: 30.06.2016 Передать фото в интент
             }
         } else {
             ActivityCompat.requestPermissions(this, new String[]{
@@ -485,6 +513,34 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 openApplicationSetting();
             }
         }).show();
+    }
+
+    private void uploadPhoto(URI uri) {
+        // create upload service client
+        PhotoUploadService service = ServiceGenerator.createService(PhotoUploadService.class);
+        // https://github.com/iPaulPro/aFileChooser/blob/master/aFileChooser/src/com/ipaulpro/afilechooser/utils/FileUtils.java
+        // use the FileUtils to get the actual file by uri
+        File file = new File(uri);
+        // create RequestBody instance from file
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        // MultipartBody.Part is used to send also the actual file name
+        MultipartBody.Part body = MultipartBody.Part.createFormData("picture", file.getName(), requestFile);
+        // add another part within the multipart request
+        String descriptionString = "hello, this is description speaking";
+        RequestBody description = RequestBody.create(MediaType.parse("multipart/form-data"), descriptionString);
+        // finally, execute the request
+        Call<ResponseBody> call = service.upload(description, body);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Log.v("Upload", "success");
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("Upload error:", t.getMessage());
+            }
+        });
     }
 
     /**
@@ -603,6 +659,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public void openApplicationSetting() {
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse(ConstantManager.SCHEME_PACKAGE + getPackageName()));
         startActivityForResult(appSettingsIntent, ConstantManager.PERMISSION_REQUEST_SETTINGS_CODE);
+    }
+
+    private void initUserInfoValues() {
+        List<String> list = mDataManager.getPreferencesManager().loadUserProfileValues();
+        for (int i = 0; i < list.size(); i++) {
+            mTextValuesUser.get(i).setText(list.get(i));
+        }
+
     }
 
 }
