@@ -86,4 +86,5 @@ public interface ConstantManager {
     String USER_AVATAR_KEY = "USER_AVATAR_KEY";
     String USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY";
     String USER_SECOND_NAME_KEY = "USER_SECOND_NAME_KEY";
+    String PARCELABLER_KEY = "PARCELABLER_KEY";
 }

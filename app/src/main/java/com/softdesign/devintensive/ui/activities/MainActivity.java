@@ -278,8 +278,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
                 showSnackBar(item.getTitle().toString());
+                if (item.getTitle().equals("Рейтинг")){
+                    Intent intent = new Intent(MainActivity.this,UserListActivity.class);
+                    startActivity(intent);
+                }
                 item.setCheckable(true);
                 mNavigationDrawer.closeDrawer(GravityCompat.START);
+
                 return false;
             }
         });
