@@ -5,11 +5,16 @@ import android.content.Context;
 import com.softdesign.devintensive.data.network.RestService;
 import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.req.UserLoginReq;
+import com.softdesign.devintensive.data.network.res.UploadPhotoUser;
 import com.softdesign.devintensive.data.network.res.UserListRes;
 import com.softdesign.devintensive.data.network.res.UserModelRes;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
+import java.io.File;
+
+import okhttp3.MultipartBody;
 import retrofit2.Call;
+import retrofit2.http.Multipart;
 
 public class DataManager {
     private static DataManager INSTANCE = null;
@@ -55,6 +60,10 @@ public class DataManager {
 
     public Call<UserListRes> getListUser(){
         return mRestService.getUserList();
+    }
+
+    public Call<UploadPhotoUser> setPhotoUser(String userId, MultipartBody.Part file){
+        return mRestService.uploadPhoto(userId,file);
     }
 
     //end region

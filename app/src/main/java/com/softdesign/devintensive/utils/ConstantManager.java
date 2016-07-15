@@ -87,4 +87,5 @@ public interface ConstantManager {
     String USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY";
     String USER_SECOND_NAME_KEY = "USER_SECOND_NAME_KEY";
     String PARCELABLER_KEY = "PARCELABLER_KEY";
+    String LOAD_EMAIL_AUTH_KEY = "LOAD_EMAIL_AUTH_KEY";
 }

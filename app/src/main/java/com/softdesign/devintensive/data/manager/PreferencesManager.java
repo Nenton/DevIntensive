@@ -139,4 +139,14 @@ public class PreferencesManager {
         list.add(mSharedPreferences.getString(ConstantManager.USER_SECOND_NAME_KEY,"null"));
         return list;
     }
+
+    public void saveEmailAuthActivity(String email) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putString(ConstantManager.LOAD_EMAIL_AUTH_KEY,email);
+        editor.apply();
+    }
+
+    public String loadEmailAuthActivity() {
+        return mSharedPreferences.getString(ConstantManager.LOAD_EMAIL_AUTH_KEY,"");
+    }
 }

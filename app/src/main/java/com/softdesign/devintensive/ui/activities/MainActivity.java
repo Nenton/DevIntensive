@@ -44,15 +44,13 @@ import com.softdesign.devintensive.data.manager.validators.EditTextValidator;
 import com.softdesign.devintensive.data.manager.validators.LengthChecker;
 import com.softdesign.devintensive.data.manager.validators.UrlChecker;
 import com.softdesign.devintensive.data.manager.validators.ValidationSummary;
-import com.softdesign.devintensive.data.network.PhotoUploadService;
-import com.softdesign.devintensive.data.network.ServiceGenerator;
+import com.softdesign.devintensive.data.network.res.UploadPhotoUser;
 import com.softdesign.devintensive.utils.AvatarRounded;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,7 +62,6 @@ import butterknife.ButterKnife;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -120,9 +117,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
         mProfilePlaceholder.setOnClickListener(this);
         mfab.setOnClickListener(this);
+        Float aFloat = getResources().getDisplayMetrics().density;
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
-                .placeholder(R.drawable.profile_photo)// TODO: 30.06.2016 Сделать пласехолдер transform + crop
+                .placeholder(R.drawable.profile_photo)
+                .centerCrop()
+                .resize((int)(getResources().getDimension(R.dimen.profile_image_size)*aFloat*1.73),(int)(getResources().getDimension(R.dimen.profile_image_size)*aFloat))
                 .into(mProfileImage);
         setupToolbar();
         setupDrawer();
@@ -302,10 +302,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 .placeholder(R.drawable.avatar)// TODO: 30.06.2016 Сделать пласехолдер transform + crop
                 .transform(new AvatarRounded())
                 .into(mAvatarImage);
-//        Bitmap bitmap = mAvatarImage.getDrawingCache();
-//        RoundedBitmapDrawable rBD = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-//        rBD.setCornerRadius(getResources().getDimension(R.dimen.height_width_avatar)/ConstantManager.RADIUS_ROUND_AVATAR_DELITEL);
-//        mAvatarImage.setImageDrawable(rBD);
     }
 
     /**
@@ -321,7 +317,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             }
             mUserInfo.get(ConstantManager.NUMBER_VIEW_IN_ARRAY_PHONE).requestFocus();
             showProfilePlaceholder();
-            lockToolbar();
+//            lockToolbar();
             mCollapsingToolbar.setExpandedTitleColor(Color.TRANSPARENT);
 
         } else {
@@ -333,7 +329,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             }
             hideProfilePlaceholder();
             saveUserFields();
-            unLockToolbar();
+//            unLockToolbar();
             mCollapsingToolbar.setExpandedTitleColor(getResources().getColor(R.color.white));
         }
     }
@@ -422,7 +418,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 showDialog(ConstantManager.LOAD_PROFILE_PHOTO);
                 break;
             case R.id.phone_call:
-                callPhoneUser();
+                //                callPhoneUser();
+                uploadPhoto(mSelectedImage);
                 break;
             case R.id.mail_send:
                 sendMailToUser();
@@ -520,30 +517,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }).show();
     }
 
-    private void uploadPhoto(URI uri) {
-        // create upload service client
-        PhotoUploadService service = ServiceGenerator.createService(PhotoUploadService.class);
-        // https://github.com/iPaulPro/aFileChooser/blob/master/aFileChooser/src/com/ipaulpro/afilechooser/utils/FileUtils.java
-        // use the FileUtils to get the actual file by uri
-        File file = new File(uri);
-        // create RequestBody instance from file
+    private void uploadPhoto(Uri uri) {
+        File file = new File(uri.getPath());
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        // MultipartBody.Part is used to send also the actual file name
-        MultipartBody.Part body = MultipartBody.Part.createFormData("picture", file.getName(), requestFile);
-        // add another part within the multipart request
-        String descriptionString = "hello, this is description speaking";
-        RequestBody description = RequestBody.create(MediaType.parse("multipart/form-data"), descriptionString);
-        // finally, execute the request
-        Call<ResponseBody> call = service.upload(description, body);
-        call.enqueue(new Callback<ResponseBody>() {
+        MultipartBody.Part body = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
+        Call<UploadPhotoUser> call = mDataManager.setPhotoUser(mDataManager.getPreferencesManager().getUserId(),body);
+        call.enqueue(new Callback<UploadPhotoUser>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.v("Upload", "success");
+            public void onResponse(Call<UploadPhotoUser> call, Response<UploadPhotoUser> response) {
+                Log.v("Загрузка фото успешна","");
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("Upload error:", t.getMessage());
+            public void onFailure(Call<UploadPhotoUser> call, Throwable t) {
+                Log.v("Неудача","");
             }
         });
     }
@@ -579,23 +566,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mProfilePlaceholder.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * Lock toolbar
-     */
-    private void lockToolbar() {
-        mAppBarLayout.setExpanded(true, true);
-        mAppbarParams.setScrollFlags(ConstantManager.NULL);
-        mCollapsingToolbar.setLayoutParams(mAppbarParams);
-
-    }
-
-    /**
-     * Unlock toolbar
-     */
-    private void unLockToolbar() {
-        mAppbarParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
-        mCollapsingToolbar.setLayoutParams(mAppbarParams);
-    }
+//    /**
+//     * Lock toolbar
+//     */
+//    private void lockToolbar() {
+//        mAppBarLayout.setExpanded(true, true);
+//        mAppbarParams.setScrollFlags(ConstantManager.NULL);
+//        mCollapsingToolbar.setLayoutParams(mAppbarParams);
+//
+//    }
+//
+//    /**
+//     * Unlock toolbar
+//     */
+//    private void unLockToolbar() {
+//        mAppbarParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
+//        mCollapsingToolbar.setLayoutParams(mAppbarParams);
+//    }
 
     /**
      * @param id Id item from dialog for load user photo
