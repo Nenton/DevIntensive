@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -82,12 +83,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     RelativeLayout mProfilePlaceholder;
     @BindView(R.id.collapsing_toolbar)
     CollapsingToolbarLayout mCollapsingToolbar;
-    @BindView(R.id.app_bar)
-    AppBarLayout mAppBarLayout;
     @BindView(R.id.profile_user_photo)
     ImageView mProfileImage;
-    @BindView(R.id.grey_splash)
-    LinearLayout mGreySplash;
     @BindViews({R.id.phone_call, R.id.mail_send, R.id.vk_url, R.id.git_url})
     List<ImageView> mImageViewFields;
     @BindViews({R.id.phone_text_layout, R.id.mail_text_layout, R.id.vk_text_layout, R.id.github_text_layout})
@@ -122,7 +119,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
                 .placeholder(R.drawable.profile_photo)
                 .centerCrop()
-                .resize((int)(getResources().getDimension(R.dimen.profile_image_size)*aFloat*1.73),(int)(getResources().getDimension(R.dimen.profile_image_size)*aFloat))
+                .resize((int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat * 1.73), (int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat))
                 .into(mProfileImage);
         setupToolbar();
         setupDrawer();
@@ -277,14 +274,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                showSnackBar(item.getTitle().toString());
-                if (item.getTitle().equals("Рейтинг")){
-                    Intent intent = new Intent(MainActivity.this,UserListActivity.class);
-                    startActivity(intent);
+                switch (item.getTitle().toString()){
+                    case "Мой профиль":
+                        break;
+                    case "Команда":
+                        break;
+                    case "Рейтинг":
+                        Intent intent = new Intent(MainActivity.this, UserListActivity.class);
+                        startActivity(intent);
+                        break;
                 }
+
                 item.setCheckable(true);
                 mNavigationDrawer.closeDrawer(GravityCompat.START);
-
                 return false;
             }
         });
@@ -292,14 +294,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         TextView mUserName = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_name_nav);
         TextView mUserEmail = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_mail_nav);
         mUserEmail.setText(mDataManager.getPreferencesManager().loadUserProfileData().get(ConstantManager.NUMBER_VIEW_IN_ARRAY_EMAIL));
-        mDataManager.getPreferencesManager().loadFirstSecondNameUser();
         mUserName.setText(String.format("%s %s", mDataManager.getPreferencesManager().loadFirstSecondNameUser().get(0), mDataManager.getPreferencesManager().loadFirstSecondNameUser().get(1)));
     }
 
     private void loadAvatar() {
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadAvatarImage())
-                .placeholder(R.drawable.avatar)// TODO: 30.06.2016 Сделать пласехолдер transform + crop
+                .placeholder(R.drawable.avatar)
                 .transform(new AvatarRounded())
                 .into(mAvatarImage);
     }
@@ -391,10 +392,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     }
 
-    private void InfoUser() {
-
-    }
-
     /**
      * @param v View which is pressed
      */
@@ -411,6 +408,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 } else {
                     changeEditMode(ConstantManager.EDIT_MODE_CAN);
                     mCurrentEditMode = ConstantManager.EDIT_MODE_NO_CAN;
+                    if (mSelectedImage != null) {
+                        uploadPhoto(mSelectedImage);
+                    }
                 }
                 break;
             case R.id.profile_placeholder:
@@ -418,8 +418,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 showDialog(ConstantManager.LOAD_PROFILE_PHOTO);
                 break;
             case R.id.phone_call:
-                //                callPhoneUser();
-                uploadPhoto(mSelectedImage);
+                callPhoneUser();
                 break;
             case R.id.mail_send:
                 sendMailToUser();
@@ -500,7 +499,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
                 startActivityForResult(takeCaptureIntent, ConstantManager.REQUEST_CAMERA_PICTURE);
-//                uploadPhoto(mPhotoFile.toURI());// TODO: 30.06.2016 Передать фото в интент
             }
         } else {
             ActivityCompat.requestPermissions(this, new String[]{
@@ -518,19 +516,29 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void uploadPhoto(Uri uri) {
-        File file = new File(uri.getPath());
+        String filePath;
+        if ("content".equals(uri.getScheme())) {
+            Cursor cursor = this.getContentResolver().query(uri, new String[]{android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
+            assert cursor != null;
+            cursor.moveToFirst();
+            filePath = cursor.getString(0);
+            cursor.close();
+        } else {
+            filePath = uri.getPath();
+        }
+        File file = new File(filePath);
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
-        Call<UploadPhotoUser> call = mDataManager.setPhotoUser(mDataManager.getPreferencesManager().getUserId(),body);
+        Call<UploadPhotoUser> call = mDataManager.setPhotoUser(mDataManager.getPreferencesManager().getUserId(), body);
         call.enqueue(new Callback<UploadPhotoUser>() {
             @Override
             public void onResponse(Call<UploadPhotoUser> call, Response<UploadPhotoUser> response) {
-                Log.v("Загрузка фото успешна","");
+                Log.e("Загрузка фото успешна", "");
             }
 
             @Override
             public void onFailure(Call<UploadPhotoUser> call, Throwable t) {
-                Log.v("Неудача","");
+                Log.e("Неудача", "");
             }
         });
     }

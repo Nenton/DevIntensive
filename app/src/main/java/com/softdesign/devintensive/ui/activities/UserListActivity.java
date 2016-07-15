@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.MatrixCursor;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -21,6 +22,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Filter;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.manager.DataManager;
@@ -28,7 +31,9 @@ import com.softdesign.devintensive.data.network.res.UserListRes;
 import com.softdesign.devintensive.data.network.res.UserModelRes;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
+import com.softdesign.devintensive.utils.AvatarRounded;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +44,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class UserListActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class UserListActivity extends BaseActivity implements SearchView.OnQueryTextListener {
     private static final String TAG = "User List Activity";
     static private Response<UserListRes> mUserListResCall;
     @BindView(R.id.users_coordinator_layout)
@@ -49,6 +54,7 @@ public class UserListActivity extends AppCompatActivity implements SearchView.On
     @BindView(R.id.users_drawer_layout)
     DrawerLayout mDrawerLayout;
     private RecyclerView mRecyclerView;
+    private ImageView mAvatarImage;
 
     private DataManager mDataManager;
     private static List<UserListRes.Datum> mUsers;
@@ -65,7 +71,6 @@ public class UserListActivity extends AppCompatActivity implements SearchView.On
         mRecyclerView = (RecyclerView) findViewById(R.id.user_list_recycle);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(linearLayoutManager);
-
         if (mUserListResCall == null && mUsers == null) {
             loadUsersInfo();
         } else if (listSearchUsers == null) {
@@ -79,9 +84,7 @@ public class UserListActivity extends AppCompatActivity implements SearchView.On
     }
 
     private void loadUsersInfo() {
-
         Call<UserListRes> call = mDataManager.getListUser();
-
         call.enqueue(new Callback<UserListRes>() {
             @Override
             public void onResponse(Call<UserListRes> call, Response<UserListRes> response) {
@@ -130,7 +133,36 @@ public class UserListActivity extends AppCompatActivity implements SearchView.On
     }
 
     private void setupDrawer() {
-        // TODO: 13.07.2016 реализовать переход в другую активити при клике по элементу меню в NavigationDrawer
+        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                switch (item.getTitle().toString()) {
+                    case "Мой профиль":
+                        Intent intent = new Intent(UserListActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        break;
+                    case "Команда":
+                        break;
+                    case "Рейтинг":
+                        break;
+                }
+
+                item.setCheckable(true);
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+                return false;
+            }
+        });
+        mAvatarImage = (ImageView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.avatar_image);
+        TextView mUserName = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_name_nav);
+        TextView mUserEmail = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_mail_nav);
+        mUserEmail.setText(mDataManager.getPreferencesManager().loadUserProfileData().get(ConstantManager.NUMBER_VIEW_IN_ARRAY_EMAIL));
+        mUserName.setText(String.format("%s %s", mDataManager.getPreferencesManager().loadFirstSecondNameUser().get(0), mDataManager.getPreferencesManager().loadFirstSecondNameUser().get(1)));
+        Picasso.with(this)
+                .load(mDataManager.getPreferencesManager().loadAvatarImage())
+                .placeholder(R.drawable.avatar)
+                .transform(new AvatarRounded())
+                .into(mAvatarImage);
     }
 
     private void setupToolbar() {
@@ -147,6 +179,7 @@ public class UserListActivity extends AppCompatActivity implements SearchView.On
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setQueryHint("Поиск по имени-фамилии");
         MenuItemCompat.setOnActionExpandListener(searchItem, new MenuItemCompat.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
@@ -171,7 +204,7 @@ public class UserListActivity extends AppCompatActivity implements SearchView.On
         List<UserListRes.Datum> mSearchUsers = mUserListResCall.body().getData();
         listSearchUsers = new ArrayList<>();
         for (UserListRes.Datum user : mSearchUsers) {
-            if (user.getFullName().contains(query)) {
+            if (user.getFullName().toLowerCase().contains(query.toLowerCase())) {
                 listSearchUsers.add(user);
             }
         }

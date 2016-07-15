@@ -11,6 +11,7 @@ import android.support.v7.widget.SwitchCompat;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -31,7 +32,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AuthActivity extends AppCompatActivity {
+public class AuthActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener{
     private DataManager mDataManager;
 
     @Nullable
@@ -59,20 +60,19 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.auth_activity);
         ButterKnife.bind(this);
-        loadEmail();
+        if (!mDataManager.getPreferencesManager().loadEmailAuthActivity().equals("")){
+            mLogin.setText(mDataManager.getPreferencesManager().loadEmailAuthActivity());
+            mSwitch.setChecked(true);
+        }
+
+        mSwitch.setOnCheckedChangeListener(this);
     }
 
-    private void loadEmail() {
-        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
-                    mLogin.setText(mDataManager.getPreferencesManager().loadEmailAuthActivity());
-                    mSwitch.setTextColor(getResources().getColor(R.color.color_accent));
-                } else mLogin.setText("");
-            }
-        });
-
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked){
+            mSwitch.setTextColor(getResources().getColor(R.color.color_accent));
+        } else ;
     }
 
     /**
@@ -120,7 +120,11 @@ public class AuthActivity extends AppCompatActivity {
         userModel.getData().getToken();
         mDataManager.getPreferencesManager().saveAuthToken(userModel.getData().getToken());
         mDataManager.getPreferencesManager().saveUserId(userModel.getData().getUser().getId());
-        mDataManager.getPreferencesManager().saveEmailAuthActivity(mLogin.getText().toString());
+        if (mSwitch.isChecked()) {
+            mDataManager.getPreferencesManager().saveEmailAuthActivity(mLogin.getText().toString());
+        } else if (!mDataManager.getPreferencesManager().loadEmailAuthActivity().isEmpty()){
+            mDataManager.getPreferencesManager().saveEmailAuthActivity("");
+        }
         saveUserValues(userModel);
         saveUserPhotoAndAvatar(userModel);
         saveUserProfileFields(userModel);
@@ -161,4 +165,7 @@ public class AuthActivity extends AppCompatActivity {
         String secondName = userModel.getData().getUser().getSecondName();
         mDataManager.getPreferencesManager().saveFirstSecondNameUser(firstName, secondName);
     }
+
+
+
 }
