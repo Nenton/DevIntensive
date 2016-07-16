@@ -33,8 +33,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         this.mCustomClickListener = customClickListener;
     }
 
-
-
     @Override
     public UsersAdapter.UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         mParentWidth = parent.getWidth();

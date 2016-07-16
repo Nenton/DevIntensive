@@ -28,7 +28,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ProfileUserActivity extends BaseActivity {
+public class ProfileUserActivity extends AppCompatActivity {
     @BindView(R.id.toolbar_profile_user)
     Toolbar mToolbar;
     @BindView(R.id.profile_userPhoto)

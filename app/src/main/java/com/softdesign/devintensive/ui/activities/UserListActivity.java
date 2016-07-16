@@ -16,6 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.softdesign.devintensive.R;
@@ -47,10 +48,12 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     DrawerLayout mDrawerLayout;
     private RecyclerView mRecyclerView;
     private ImageView mAvatarImage;
-
+    SearchView searchView;
     private DataManager mDataManager;
     private static List<UserListRes.Datum> mUsers;
     private static List<UserListRes.Datum> listSearchUsers;
+    private static String sQueryString;
+    private static int sPositionItemUser = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +118,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         UsersAdapter usersAdapter = new UsersAdapter(users, new UsersAdapter.UserViewHolder.CustomClickListener() {
             @Override
             public void onUserItemClickListener(int position) {
+                sPositionItemUser = position;
                 UserDTO userProfile = new UserDTO(users.get(position));
                 Intent userIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
                 userIntent.putExtra(ConstantManager.PARCELABLER_KEY, userProfile);
@@ -122,6 +126,10 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
             }
         });
         mRecyclerView.setAdapter(usersAdapter);
+        if (sPositionItemUser != 0){
+            mRecyclerView.scrollToPosition(sPositionItemUser);
+            sPositionItemUser = 0;
+        }
     }
 
     private void setupDrawer() {
@@ -170,8 +178,14 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.search);
-        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+
+        searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setQueryHint("Поиск по имени-фамилии");
+        if (sQueryString != null && !sQueryString.isEmpty()){
+            searchItem.expandActionView();
+            searchView.setQuery(sQueryString,false);
+        }
+
         MenuItemCompat.setOnActionExpandListener(searchItem, new MenuItemCompat.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
@@ -183,11 +197,13 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
                 loadUsers(mUsers);
                 if (listSearchUsers != null && !listSearchUsers.isEmpty()) {
                     listSearchUsers.clear();
+                    sQueryString = null;
                 }
                 return true;
             }
         });
         searchView.setOnQueryTextListener(this);
+
         return true;
     }
 
@@ -206,6 +222,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        sQueryString = newText;
         return true;
     }
 }

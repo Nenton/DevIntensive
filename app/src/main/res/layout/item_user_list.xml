@@ -136,7 +136,7 @@
             android:layout_height="wrap_content"
             style="@style/Base.Widget.AppCompat.Button.Borderless"
             android:id="@+id/more_info_btn"
-            android:text="Просмор"
+            android:text="Просмотр"
             android:textColor="@color/color_accent"
             android:paddingLeft="@dimen/spacing_normal_16"
             android:paddingRight="@dimen/spacing_normal_16"/>
