@@ -223,7 +223,6 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     @Override
     public boolean onQueryTextChange(String newText) {
         sQueryString = newText;
-
         return true;
     }
 }
