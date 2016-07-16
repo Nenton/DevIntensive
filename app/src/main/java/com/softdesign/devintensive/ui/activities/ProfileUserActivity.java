@@ -1,14 +1,19 @@
 package com.softdesign.devintensive.ui.activities;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -57,7 +62,6 @@ public class ProfileUserActivity extends BaseActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
     }
 
     private void initProfileData() {
@@ -67,6 +71,7 @@ public class ProfileUserActivity extends BaseActivity {
         final RepositoriesAdapter repositoriesAdapter = new RepositoriesAdapter(this, repositories);
 
         mRepositoriesView.setAdapter(repositoriesAdapter);
+        setListViewHeightBasedOnChildren(mRepositoriesView);
         mUserBio.setText(userDTO.getBio());
         mUserRating.setText(userDTO.getRating());
         mUserCodeLines.setText(userDTO.getCodeLines());
@@ -82,8 +87,24 @@ public class ProfileUserActivity extends BaseActivity {
         mRepositoriesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: 14.07.2016 сделать реализацию интент
+                Uri uri = Uri.parse(ConstantManager.SCHEME_HTTPS + repositories.get(position));
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent);
             }
         });
+    }
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null)
+            return;
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
+        int totalHeight = 0;
+        View view = null;
+        for (int i = 0; i < listAdapter.getCount(); i++) { view = listAdapter.getView(i, view, listView);
+            if (i == 0) view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, android.app.ActionBar.LayoutParams.WRAP_CONTENT));
+            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED); totalHeight += view.getMeasuredHeight();
+        }
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1)); listView.setLayoutParams(params);
     }
 }

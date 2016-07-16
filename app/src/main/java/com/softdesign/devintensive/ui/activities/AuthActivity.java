@@ -63,6 +63,7 @@ public class AuthActivity extends AppCompatActivity implements CompoundButton.On
         if (!mDataManager.getPreferencesManager().loadEmailAuthActivity().equals("")){
             mLogin.setText(mDataManager.getPreferencesManager().loadEmailAuthActivity());
             mSwitch.setChecked(true);
+            mSwitch.setTextColor(getResources().getColor(R.color.color_accent));
         }
 
         mSwitch.setOnCheckedChangeListener(this);
@@ -72,7 +73,8 @@ public class AuthActivity extends AppCompatActivity implements CompoundButton.On
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (isChecked){
             mSwitch.setTextColor(getResources().getColor(R.color.color_accent));
-        } else ;
+        } else
+            mSwitch.setTextColor(getResources().getColor(R.color.grey_light));
     }
 
     /**

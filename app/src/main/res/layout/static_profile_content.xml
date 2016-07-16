@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior=".ui.behaviors.CustomNestedScrollBehavior">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -13,39 +14,42 @@
 
         <LinearLayout
             style="@style/linear_horizontal_layout">
+
             <ImageView
                 style="@style/icon.left"
                 android:src="@drawable/github_circle"/>
+
             <LinearLayout
-                style="@style/linear_layout">
-                <android.support.design.widget.TextInputLayout
-                    android:id="@+id/github_text_layout"
-                    style="@style/text_edit_text">
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                >
                     <ListView
                         android:id="@+id/repositories_list"
-                        android:layout_marginLeft="@dimen/spacing_medium_32"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                    </ListView>
-
-                </android.support.design.widget.TextInputLayout>
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/spacing_medium_32"/>
 
             </LinearLayout>
 
         </LinearLayout>
+
         <View
             style="@style/divider"/>
 
         <LinearLayout
             style="@style/linear_horizontal_layout">
+
             <ImageView
                 style="@style/icon.left"
                 android:src="@drawable/ic_person_black_24dp"/>
+
             <LinearLayout
                 style="@style/linear_layout">
+
                 <android.support.design.widget.TextInputLayout
                     style="@style/text_edit_text">
+
                     <EditText
                         android:id="@+id/about_profile_text"
                         style="@style/text"

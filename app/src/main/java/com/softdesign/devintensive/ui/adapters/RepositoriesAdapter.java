@@ -22,8 +22,6 @@ public class RepositoriesAdapter extends BaseAdapter {
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-
-
     @Override
     public int getCount() {
         return mRepositories.size();
@@ -36,7 +34,7 @@ public class RepositoriesAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
@@ -45,9 +43,12 @@ public class RepositoriesAdapter extends BaseAdapter {
         if (view == null){
             view = mLayoutInflater.inflate(R.layout.item_repositories_list,parent,false);
         }
-
         TextView textView = (TextView)view.findViewById(R.id.github);
         textView.setText(mRepositories.get(position));
+        if (parent.getHeight() == view.getHeight()){
+            parent.setMinimumHeight(view.getHeight()*getCount());
+        }
         return view;
     }
+
 }
