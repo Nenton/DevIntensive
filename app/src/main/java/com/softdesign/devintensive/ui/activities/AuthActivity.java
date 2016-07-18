@@ -7,13 +7,16 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SwitchCompat;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.manager.DataManager;
-import com.softdesign.devintensive.data.manager.PreferencesManager;
 import com.softdesign.devintensive.data.network.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.res.UserModelRes;
 import com.softdesign.devintensive.utils.ConstantManager;
@@ -29,7 +32,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LoginActivity extends AppCompatActivity {
+public class AuthActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener{
     private DataManager mDataManager;
 
     @Nullable
@@ -43,6 +46,8 @@ public class LoginActivity extends AppCompatActivity {
     EditText mPassword;
     @BindView(R.id.auth_coordinator_layout)
     CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.switch_save_me)
+    SwitchCompat mSwitch;
 
     /**
      * Create activity
@@ -55,6 +60,21 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.auth_activity);
         ButterKnife.bind(this);
+        if (!mDataManager.getPreferencesManager().loadEmailAuthActivity().equals("")){
+            mLogin.setText(mDataManager.getPreferencesManager().loadEmailAuthActivity());
+            mSwitch.setChecked(true);
+            mSwitch.setTextColor(getResources().getColor(R.color.color_accent));
+        }
+
+        mSwitch.setOnCheckedChangeListener(this);
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked){
+            mSwitch.setTextColor(getResources().getColor(R.color.color_accent));
+        } else
+            mSwitch.setTextColor(getResources().getColor(R.color.grey_light));
     }
 
     /**
@@ -102,11 +122,16 @@ public class LoginActivity extends AppCompatActivity {
         userModel.getData().getToken();
         mDataManager.getPreferencesManager().saveAuthToken(userModel.getData().getToken());
         mDataManager.getPreferencesManager().saveUserId(userModel.getData().getUser().getId());
+        if (mSwitch.isChecked()) {
+            mDataManager.getPreferencesManager().saveEmailAuthActivity(mLogin.getText().toString());
+        } else if (!mDataManager.getPreferencesManager().loadEmailAuthActivity().isEmpty()){
+            mDataManager.getPreferencesManager().saveEmailAuthActivity("");
+        }
         saveUserValues(userModel);
         saveUserPhotoAndAvatar(userModel);
         saveUserProfileFields(userModel);
         saveFirstSecondNameUser(userModel);
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        Intent intent = new Intent(AuthActivity.this, MainActivity.class);
         startActivity(intent);
     }
 
@@ -120,7 +145,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void saveUserProfileFields(UserModelRes userModel){
+    private void saveUserProfileFields(UserModelRes userModel) {
         ArrayList<String> userProfileFields = new ArrayList<>();
         userProfileFields.add(userModel.getData().getUser().getContacts().getPhone());
         userProfileFields.add(userModel.getData().getUser().getContacts().getEmail());
@@ -130,16 +155,19 @@ public class LoginActivity extends AppCompatActivity {
         mDataManager.getPreferencesManager().saveUserProfileData(userProfileFields);
     }
 
-    private void saveUserPhotoAndAvatar(UserModelRes userModel){
+    private void saveUserPhotoAndAvatar(UserModelRes userModel) {
         Uri photo = Uri.parse(userModel.getData().getUser().getPublicInfo().getPhoto());
         Uri avatar = Uri.parse(userModel.getData().getUser().getPublicInfo().getAvatar());
         mDataManager.getPreferencesManager().saveUserPhoto(photo);
         mDataManager.getPreferencesManager().saveAvatarImage(avatar);
     }
 
-    private void saveFirstSecondNameUser(UserModelRes userModel){
+    private void saveFirstSecondNameUser(UserModelRes userModel) {
         String firstName = userModel.getData().getUser().getFirstName();
         String secondName = userModel.getData().getUser().getSecondName();
-        mDataManager.getPreferencesManager().saveFirstSecondNameUser(firstName,secondName);
+        mDataManager.getPreferencesManager().saveFirstSecondNameUser(firstName, secondName);
     }
+
+
+
 }

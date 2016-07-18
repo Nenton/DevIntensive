@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:id="@+id/item_repositories_list"
+        android:layout_height="wrap_content">
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/github_text_layout"
+            android:layout_marginRight="@dimen/spacing_larger_72"
+            android:layout_centerVertical="true"
+            >
+            <EditText
+                android:id="@+id/github"
+                style="@style/text"
+                android:hint="@string/repos_hint"/>
+
+        </android.support.design.widget.TextInputLayout>
+    <ImageView
+        android:id="@+id/git_url"
+        style="@style/icon.right"
+        android:src="@drawable/ic_remove_red_eye_black_24dp"
+        android:layout_alignParentRight="true"/>
+    </RelativeLayout>
+</LinearLayout>

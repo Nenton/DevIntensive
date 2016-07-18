@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -44,15 +45,13 @@ import com.softdesign.devintensive.data.manager.validators.EditTextValidator;
 import com.softdesign.devintensive.data.manager.validators.LengthChecker;
 import com.softdesign.devintensive.data.manager.validators.UrlChecker;
 import com.softdesign.devintensive.data.manager.validators.ValidationSummary;
-import com.softdesign.devintensive.data.network.PhotoUploadService;
-import com.softdesign.devintensive.data.network.ServiceGenerator;
+import com.softdesign.devintensive.data.network.res.UploadPhotoUser;
 import com.softdesign.devintensive.utils.AvatarRounded;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,7 +63,6 @@ import butterknife.ButterKnife;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -85,12 +83,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     RelativeLayout mProfilePlaceholder;
     @BindView(R.id.collapsing_toolbar)
     CollapsingToolbarLayout mCollapsingToolbar;
-    @BindView(R.id.app_bar)
-    AppBarLayout mAppBarLayout;
     @BindView(R.id.profile_user_photo)
     ImageView mProfileImage;
-    @BindView(R.id.grey_splash)
-    LinearLayout mGreySplash;
     @BindViews({R.id.phone_call, R.id.mail_send, R.id.vk_url, R.id.git_url})
     List<ImageView> mImageViewFields;
     @BindViews({R.id.phone_text_layout, R.id.mail_text_layout, R.id.vk_text_layout, R.id.github_text_layout})
@@ -120,9 +114,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
         mProfilePlaceholder.setOnClickListener(this);
         mfab.setOnClickListener(this);
+        Float aFloat = getResources().getDisplayMetrics().density;
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
-                .placeholder(R.drawable.profile_photo)// TODO: 30.06.2016 Сделать пласехолдер transform + crop
+                .placeholder(R.drawable.profile_photo)
+                .centerCrop()
+                .resize((int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat * 1.73), (int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat))
                 .into(mProfileImage);
         setupToolbar();
         setupDrawer();
@@ -277,7 +274,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                showSnackBar(item.getTitle().toString());
+                switch (item.getTitle().toString()){
+                    case "Мой профиль":
+                        break;
+                    case "Команда":
+                        break;
+                    case "Рейтинг":
+                        Intent intent = new Intent(MainActivity.this, UserListActivity.class);
+                        startActivity(intent);
+                        break;
+                }
+
                 item.setCheckable(true);
                 mNavigationDrawer.closeDrawer(GravityCompat.START);
                 return false;
@@ -287,20 +294,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         TextView mUserName = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_name_nav);
         TextView mUserEmail = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_mail_nav);
         mUserEmail.setText(mDataManager.getPreferencesManager().loadUserProfileData().get(ConstantManager.NUMBER_VIEW_IN_ARRAY_EMAIL));
-        mDataManager.getPreferencesManager().loadFirstSecondNameUser();
         mUserName.setText(String.format("%s %s", mDataManager.getPreferencesManager().loadFirstSecondNameUser().get(0), mDataManager.getPreferencesManager().loadFirstSecondNameUser().get(1)));
     }
 
     private void loadAvatar() {
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadAvatarImage())
-                .placeholder(R.drawable.avatar)// TODO: 30.06.2016 Сделать пласехолдер transform + crop
+                .placeholder(R.drawable.avatar)
                 .transform(new AvatarRounded())
                 .into(mAvatarImage);
-//        Bitmap bitmap = mAvatarImage.getDrawingCache();
-//        RoundedBitmapDrawable rBD = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-//        rBD.setCornerRadius(getResources().getDimension(R.dimen.height_width_avatar)/ConstantManager.RADIUS_ROUND_AVATAR_DELITEL);
-//        mAvatarImage.setImageDrawable(rBD);
     }
 
     /**
@@ -316,7 +318,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             }
             mUserInfo.get(ConstantManager.NUMBER_VIEW_IN_ARRAY_PHONE).requestFocus();
             showProfilePlaceholder();
-            lockToolbar();
+//            lockToolbar();
             mCollapsingToolbar.setExpandedTitleColor(Color.TRANSPARENT);
 
         } else {
@@ -328,7 +330,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             }
             hideProfilePlaceholder();
             saveUserFields();
-            unLockToolbar();
+//            unLockToolbar();
             mCollapsingToolbar.setExpandedTitleColor(getResources().getColor(R.color.white));
         }
     }
@@ -390,10 +392,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     }
 
-    private void InfoUser() {
-
-    }
-
     /**
      * @param v View which is pressed
      */
@@ -410,6 +408,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 } else {
                     changeEditMode(ConstantManager.EDIT_MODE_CAN);
                     mCurrentEditMode = ConstantManager.EDIT_MODE_NO_CAN;
+                    if (mSelectedImage != null) {
+                        uploadPhoto(mSelectedImage);
+                    }
                 }
                 break;
             case R.id.profile_placeholder:
@@ -498,7 +499,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
                 startActivityForResult(takeCaptureIntent, ConstantManager.REQUEST_CAMERA_PICTURE);
-//                uploadPhoto(mPhotoFile.toURI());// TODO: 30.06.2016 Передать фото в интент
             }
         } else {
             ActivityCompat.requestPermissions(this, new String[]{
@@ -515,30 +515,30 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }).show();
     }
 
-    private void uploadPhoto(URI uri) {
-        // create upload service client
-        PhotoUploadService service = ServiceGenerator.createService(PhotoUploadService.class);
-        // https://github.com/iPaulPro/aFileChooser/blob/master/aFileChooser/src/com/ipaulpro/afilechooser/utils/FileUtils.java
-        // use the FileUtils to get the actual file by uri
-        File file = new File(uri);
-        // create RequestBody instance from file
+    private void uploadPhoto(Uri uri) {
+        String filePath;
+        if ("content".equals(uri.getScheme())) {
+            Cursor cursor = this.getContentResolver().query(uri, new String[]{android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
+            assert cursor != null;
+            cursor.moveToFirst();
+            filePath = cursor.getString(0);
+            cursor.close();
+        } else {
+            filePath = uri.getPath();
+        }
+        File file = new File(filePath);
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        // MultipartBody.Part is used to send also the actual file name
-        MultipartBody.Part body = MultipartBody.Part.createFormData("picture", file.getName(), requestFile);
-        // add another part within the multipart request
-        String descriptionString = "hello, this is description speaking";
-        RequestBody description = RequestBody.create(MediaType.parse("multipart/form-data"), descriptionString);
-        // finally, execute the request
-        Call<ResponseBody> call = service.upload(description, body);
-        call.enqueue(new Callback<ResponseBody>() {
+        MultipartBody.Part body = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
+        Call<UploadPhotoUser> call = mDataManager.setPhotoUser(mDataManager.getPreferencesManager().getUserId(), body);
+        call.enqueue(new Callback<UploadPhotoUser>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.v("Upload", "success");
+            public void onResponse(Call<UploadPhotoUser> call, Response<UploadPhotoUser> response) {
+                Log.e("Загрузка фото успешна", "");
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("Upload error:", t.getMessage());
+            public void onFailure(Call<UploadPhotoUser> call, Throwable t) {
+                Log.e("Неудача", "");
             }
         });
     }
@@ -574,23 +574,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mProfilePlaceholder.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * Lock toolbar
-     */
-    private void lockToolbar() {
-        mAppBarLayout.setExpanded(true, true);
-        mAppbarParams.setScrollFlags(ConstantManager.NULL);
-        mCollapsingToolbar.setLayoutParams(mAppbarParams);
-
-    }
-
-    /**
-     * Unlock toolbar
-     */
-    private void unLockToolbar() {
-        mAppbarParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
-        mCollapsingToolbar.setLayoutParams(mAppbarParams);
-    }
+//    /**
+//     * Lock toolbar
+//     */
+//    private void lockToolbar() {
+//        mAppBarLayout.setExpanded(true, true);
+//        mAppbarParams.setScrollFlags(ConstantManager.NULL);
+//        mCollapsingToolbar.setLayoutParams(mAppbarParams);
+//
+//    }
+//
+//    /**
+//     * Unlock toolbar
+//     */
+//    private void unLockToolbar() {
+//        mAppbarParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
+//        mCollapsingToolbar.setLayoutParams(mAppbarParams);
+//    }
 
     /**
      * @param id Id item from dialog for load user photo
