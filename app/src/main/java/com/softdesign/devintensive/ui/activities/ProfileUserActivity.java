@@ -7,7 +7,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.MotionEvent;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -21,6 +21,8 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.RepositoriesAdapter;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -29,6 +31,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ProfileUserActivity extends AppCompatActivity {
+    private static final String TAG = ConstantManager.TAG_PREFIX + "Profile Activity";
     @BindView(R.id.toolbar_profile_user)
     Toolbar mToolbar;
     @BindView(R.id.profile_userPhoto)
@@ -65,13 +68,13 @@ public class ProfileUserActivity extends AppCompatActivity {
     }
 
     private void initProfileData() {
-        UserDTO userDTO = getIntent().getParcelableExtra(ConstantManager.PARCELABLER_KEY);
+        final UserDTO userDTO = getIntent().getParcelableExtra(ConstantManager.PARCELABLER_KEY);
 
         final List<String> repositories = userDTO.getRepositories();
         final RepositoriesAdapter repositoriesAdapter = new RepositoriesAdapter(this, repositories);
 
         mRepositoriesView.setAdapter(repositoriesAdapter);
-        setListViewHeightBasedOnChildren(mRepositoriesView);
+        RepositoriesAdapter.setListViewHeightBasedOnChildren(mRepositoriesView);
         mUserBio.setText(userDTO.getBio());
         mUserRating.setText(userDTO.getRating());
         mUserCodeLines.setText(userDTO.getCodeLines());
@@ -82,7 +85,32 @@ public class ProfileUserActivity extends AppCompatActivity {
                 .load(userDTO.getPhoto())
                 .error(R.drawable.profile_photo)
                 .placeholder(R.drawable.profile_photo)
-                .into(mUserProfileImage);
+                .networkPolicy(NetworkPolicy.OFFLINE)
+                .into(mUserProfileImage, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d(TAG, " load photo from cache");
+                    }
+
+                    @Override
+                    public void onError() {
+                        Picasso.with(ProfileUserActivity.this)
+                                .load(userDTO.getPhoto())
+                                .error(R.drawable.profile_photo)
+                                .placeholder(R.drawable.profile_photo)
+                                .into(mUserProfileImage, new Callback() {
+                                    @Override
+                                    public void onSuccess() {
+
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        Log.d(TAG, " error load photo from cache");
+                                    }
+                                });
+                    }
+                });
 
         mRepositoriesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -93,18 +121,5 @@ public class ProfileUserActivity extends AppCompatActivity {
             }
         });
     }
-    public static void setListViewHeightBasedOnChildren(ListView listView) {
-        ListAdapter listAdapter = listView.getAdapter();
-        if (listAdapter == null)
-            return;
-        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
-        int totalHeight = 0;
-        View view = null;
-        for (int i = 0; i < listAdapter.getCount(); i++) { view = listAdapter.getView(i, view, listView);
-            if (i == 0) view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, android.app.ActionBar.LayoutParams.WRAP_CONTENT));
-            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED); totalHeight += view.getMeasuredHeight();
-        }
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1)); listView.setLayoutParams(params);
-    }
+
 }

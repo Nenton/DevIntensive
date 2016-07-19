@@ -1,8 +1,11 @@
 package com.softdesign.devintensive.data.network;
 
+import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.softdesign.devintensive.data.network.interceptors.HeaderInterceptor;
 import com.softdesign.devintensive.utils.AppConfig;
+import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
+import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -22,6 +25,10 @@ public class ServiceGenerator {
 
         httpClient.addInterceptor(new HeaderInterceptor());
         httpClient.addInterceptor(logging);
+        httpClient.cache(new Cache(DevIntensiveApplication.getContext().getCacheDir(),Integer.MAX_VALUE));
+        httpClient.addNetworkInterceptor(new StethoInterceptor());
+
+        // TODO: 16.07.2016 35 минута видео поставить таймауты
 
         Retrofit retrofit = sBuilder
                 .client(httpClient.build())

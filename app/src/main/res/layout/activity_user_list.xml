@@ -32,8 +32,9 @@
 
         </android.support.design.widget.AppBarLayout>
         <include layout="@layout/user_list_content"/>
-
     </android.support.design.widget.CoordinatorLayout>
+
+
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"

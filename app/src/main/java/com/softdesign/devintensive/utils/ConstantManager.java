@@ -6,12 +6,13 @@ package com.softdesign.devintensive.utils;
 public interface ConstantManager {
     String PREFIX_VK = "vk.com/";
     String PREFIX_GIT = "github.com/";
-    String PREFIX_BASE_ACTIVITY = "BaseActivity";
+    String PREFIX_BASE_ACTIVITY = "Base Activity";
     String TAG_PREFIX="DEV ";
     String TAG_JPG= "JPEG_";
     String FORMAT_JPG= ".jpg";
     String COLOR_MODE_KEY="COLOR_KEY";
     String EDIT_CONSTANT_MODE="EDIT_CONSTANT_MODE";
+    String EDIT_CURRENT_MODE="EDIT_CURRENT_MODE";
     String USER_PHONE_KEY = "USER_PHONE_KEY" ;
     String USER_EMAIL_KEY = "USER_EMAIL_KEY";
     String USER_VK_KEY = "USER_VK_KEY";
@@ -66,8 +67,6 @@ public interface ConstantManager {
     int NUMBER_VIEW_IN_ARRAY_PHONE = 0;
     int NUMBER_VIEW_IN_ARRAY_EMAIL = 1;
     int NUMBER_VIEW_IN_ARRAY_VK = 2;
-    int NUMBER_VIEW_IN_ARRAY_GIT = 3;
-    int DELAY_TIME_SPLASH = 5000;
     int EDIT_MODE_CAN = 1;
     int EDIT_MODE_NO_CAN = 0;
     int NUMBER_VIEW_IN_ARRAY_LOAD_FROM_GALLERY = 0;
@@ -84,8 +83,9 @@ public interface ConstantManager {
     String USER_CODE_LINES_VALUE = "USER_CODE_LINES_VALUE";
     String USER_PROJECT_VALUE = "USER_PROJECT_VALUE";
     String USER_AVATAR_KEY = "USER_AVATAR_KEY";
-    String USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY";
-    String USER_SECOND_NAME_KEY = "USER_SECOND_NAME_KEY";
+    String USER_FULL_NAME_KEY = "USER_FULL_NAME_KEY";
+//    String USER_SECOND_NAME_KEY = "USER_SECOND_NAME_KEY";
     String PARCELABLER_KEY = "PARCELABLER_KEY";
-    String LOAD_EMAIL_AUTH_KEY = "LOAD_EMAIL_AUTH_KEY";
+//    String LOAD_EMAIL_AUTH_KEY = "LOAD_EMAIL_AUTH_KEY";
+    String NULL_STRING = "null";
 }

@@ -52,9 +52,9 @@ public class EditTextValidator extends BaseValidator implements TextWatcher, OnF
             case R.id.vk_text:
                 mInt = R.string.vk;
                 break;
-            case R.id.github_text:
-                mInt = R.string.git;
-                break;
+//            case R.id.github_text:
+//                mInt = R.string.git;
+//                break;
         }
 
         switch (mode) {
