@@ -2,17 +2,11 @@ package com.softdesign.devintensive.ui.activities;
 
 import android.content.Intent;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -28,23 +22,18 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.redmadrobot.chronos.ChronosConnector;
-import com.redmadrobot.chronos.ChronosOperation;
-import com.redmadrobot.chronos.ChronosOperationResult;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.manager.DataManager;
 import com.softdesign.devintensive.data.storage.models.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
-import com.softdesign.devintensive.data.storage.models.UserDao;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AvatarRounded;
 import com.softdesign.devintensive.utils.ConstantManager;
-import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.QueryInBd;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
@@ -72,6 +61,8 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     private Handler mHandler;
     private static int mWidthWindows;
     private ChronosConnector mChronosConnector;
+    private List<User> mUsers;
+    private UsersAdapter usersAdapter;
 
     public static int getmWidthWindows() {
         return mWidthWindows;
@@ -104,7 +95,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         mDataManager = DataManager.getInstanse();
         ButterKnife.bind(this);
         mChronosConnector = new ChronosConnector();
-        mChronosConnector.onCreate(this,savedInstanceState);
+        mChronosConnector.onCreate(this, savedInstanceState);
         mHandler = new Handler();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.user_list_recycle);
@@ -127,12 +118,17 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     }
 
     private void setupSwipe() {
-        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP|ItemTouchHelper.DOWN,ItemTouchHelper.RIGHT) {
 
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                showSnackbar("3");
-                return false;
+                final int fromPosition = viewHolder.getAdapterPosition();
+                final int toPosition = target.getAdapterPosition();
+                User prev = mUsers.remove(fromPosition);
+                mUsers.add(toPosition > fromPosition ? toPosition - 1 : toPosition, prev);
+                usersAdapter.notifyItemMoved(fromPosition, toPosition);
+                usersAdapter.notifyItemMoved(fromPosition, toPosition);
+                return true;
             }
 
             @Override
@@ -143,7 +139,10 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                showSnackbar("1");
+                mDataManager.deleteUser(mUsers.get(viewHolder.getAdapterPosition()).getRemoteId());
+                int position = viewHolder.getAdapterPosition();
+                mUsers.remove(position);
+                usersAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -159,18 +158,19 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
 
 
     public void onOperationFinished(final QueryInBd.Result users) {
-        UsersAdapter usersAdapter = new UsersAdapter(users.getOutput(), new UsersAdapter.UserViewHolder.CustomClickListener() {
+        mUsers = users.getOutput();
+        usersAdapter = new UsersAdapter(mUsers, new UsersAdapter.UserViewHolder.CustomClickListener() {
             @Override
             public void onUserItemClickListener(int position) {
                 sPositionItemUser = position;
-                UserDTO userProfile = new UserDTO(users.getOutput().get(position));
+                UserDTO userProfile = new UserDTO(mUsers.get(position));
                 Intent userIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
                 userIntent.putExtra(ConstantManager.PARCELABLER_KEY, userProfile);
                 startActivity(userIntent);
             }
         });
 
-        if (sQueryString == null || sQueryString.isEmpty()){
+        if (sQueryString == null || sQueryString.isEmpty()) {
             mRecyclerView.setAdapter(usersAdapter);
         } else {
             mRecyclerView.swapAdapter(usersAdapter, false);
@@ -290,7 +290,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                mChronosConnector.runOperation(new QueryInBd(),true);
+                mChronosConnector.runOperation(new QueryInBd(), true);
                 sQueryString = null;
                 return true;
             }
@@ -322,7 +322,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
             @Override
             public void run() {
                 sQueryString = query;
-                mChronosConnector.runOperation(new QueryInBd(query),true);
+                mChronosConnector.runOperation(new QueryInBd(query), true);
             }
         };
         mHandler.removeCallbacks(runnable);

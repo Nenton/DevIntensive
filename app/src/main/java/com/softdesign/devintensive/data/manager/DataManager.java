@@ -120,7 +120,16 @@ public class DataManager {
         return userList;
     }
 
-
+    public void deleteUser(String query) {
+        try {
+            mDaoSession.queryBuilder(User.class)
+                    .where(UserDao.Properties.RemoteId.eq(query))
+                    .buildDelete()
+                    .executeDeleteWithoutDetachingEntities();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public List<User> getUserListByName(String query) {
         List<User> userList = new ArrayList<>();

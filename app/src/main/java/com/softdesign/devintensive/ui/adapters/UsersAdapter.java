@@ -50,6 +50,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     @Override
     public void onBindViewHolder(final UsersAdapter.UserViewHolder holder, int position) {
         final User user = mUsers.get(position);
+
         final String userPhoto;
         if (user.getPhoto().isEmpty()) {
             userPhoto = "null";
