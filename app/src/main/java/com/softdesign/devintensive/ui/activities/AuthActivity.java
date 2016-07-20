@@ -80,6 +80,7 @@ public class AuthActivity extends BaseActivity implements CompoundButton.OnCheck
                 && mDataManager.getPreferencesManager().getUserId() != null
                 && !mDataManager.getPreferencesManager().getUserId().equals(ConstantManager.NULL_STRING)) {
             showProgress();
+
             EventBus.getDefault().postSticky(Callback());
         }
         super.onStart();

@@ -30,7 +30,9 @@ public class UserDao extends AbstractDao<User, Long> {
         public final static Property Rating = new Property(5, int.class, "rating", false, "RATING");
         public final static Property CodeLines = new Property(6, int.class, "codeLines", false, "CODE_LINES");
         public final static Property Projects = new Property(7, int.class, "projects", false, "PROJECTS");
-        public final static Property Bio = new Property(8, String.class, "bio", false, "BIO");
+        public final static Property SortPosition = new Property(8, int.class, "sortPosition", false, "SORT_POSITION");
+        public final static Property Sort = new Property(9, boolean.class, "sort", false, "SORT");
+        public final static Property Bio = new Property(10, String.class, "bio", false, "BIO");
     };
 
     private DaoSession daoSession;
@@ -57,7 +59,9 @@ public class UserDao extends AbstractDao<User, Long> {
                 "\"RATING\" INTEGER NOT NULL ," + // 5: rating
                 "\"CODE_LINES\" INTEGER NOT NULL ," + // 6: codeLines
                 "\"PROJECTS\" INTEGER NOT NULL ," + // 7: projects
-                "\"BIO\" TEXT);"); // 8: bio
+                "\"SORT_POSITION\" INTEGER NOT NULL ," + // 8: sortPosition
+                "\"SORT\" INTEGER NOT NULL ," + // 9: sort
+                "\"BIO\" TEXT);"); // 10: bio
     }
 
     /** Drops the underlying database table. */
@@ -85,10 +89,12 @@ public class UserDao extends AbstractDao<User, Long> {
         stmt.bindLong(6, entity.getRating());
         stmt.bindLong(7, entity.getCodeLines());
         stmt.bindLong(8, entity.getProjects());
+        stmt.bindLong(9, entity.getSortPosition());
+        stmt.bindLong(10, entity.getSort() ? 1L: 0L);
  
         String bio = entity.getBio();
         if (bio != null) {
-            stmt.bindString(9, bio);
+            stmt.bindString(11, bio);
         }
     }
 
@@ -111,10 +117,12 @@ public class UserDao extends AbstractDao<User, Long> {
         stmt.bindLong(6, entity.getRating());
         stmt.bindLong(7, entity.getCodeLines());
         stmt.bindLong(8, entity.getProjects());
+        stmt.bindLong(9, entity.getSortPosition());
+        stmt.bindLong(10, entity.getSort() ? 1L: 0L);
  
         String bio = entity.getBio();
         if (bio != null) {
-            stmt.bindString(9, bio);
+            stmt.bindString(11, bio);
         }
     }
 
@@ -140,7 +148,9 @@ public class UserDao extends AbstractDao<User, Long> {
             cursor.getInt(offset + 5), // rating
             cursor.getInt(offset + 6), // codeLines
             cursor.getInt(offset + 7), // projects
-            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8) // bio
+            cursor.getInt(offset + 8), // sortPosition
+            cursor.getShort(offset + 9) != 0, // sort
+            cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10) // bio
         );
         return entity;
     }
@@ -155,7 +165,9 @@ public class UserDao extends AbstractDao<User, Long> {
         entity.setRating(cursor.getInt(offset + 5));
         entity.setCodeLines(cursor.getInt(offset + 6));
         entity.setProjects(cursor.getInt(offset + 7));
-        entity.setBio(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
+        entity.setSortPosition(cursor.getInt(offset + 8));
+        entity.setSort(cursor.getShort(offset + 9) != 0);
+        entity.setBio(cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10));
      }
     
     @Override

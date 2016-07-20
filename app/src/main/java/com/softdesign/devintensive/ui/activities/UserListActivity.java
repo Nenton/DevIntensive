@@ -94,6 +94,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         setContentView(R.layout.activity_user_list);
         mDataManager = DataManager.getInstanse();
         ButterKnife.bind(this);
+        sPositionItemUser = 0;
         mChronosConnector = new ChronosConnector();
         mChronosConnector.onCreate(this, savedInstanceState);
         mHandler = new Handler();
@@ -125,8 +126,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
                 final int fromPosition = viewHolder.getAdapterPosition();
                 final int toPosition = target.getAdapterPosition();
                 User prev = mUsers.remove(fromPosition);
-                mUsers.add(toPosition > fromPosition ? toPosition - 1 : toPosition, prev);
-                usersAdapter.notifyItemMoved(fromPosition, toPosition);
+                mUsers.add(toPosition, prev);
                 usersAdapter.notifyItemMoved(fromPosition, toPosition);
                 return true;
             }

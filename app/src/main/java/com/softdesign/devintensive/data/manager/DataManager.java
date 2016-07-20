@@ -37,6 +37,7 @@ public class DataManager {
     private RestService mRestService;
     private Picasso mPicasso;
     private DaoSession mDaoSession;
+    public static int sNumberInBd = 0;
 
     /**
      * Create preferencesmanager
@@ -124,6 +125,10 @@ public class DataManager {
         try {
             mDaoSession.queryBuilder(User.class)
                     .where(UserDao.Properties.RemoteId.eq(query))
+                    .buildDelete()
+                    .executeDeleteWithoutDetachingEntities();
+            mDaoSession.queryBuilder(Repositories.class)
+                    .where(RepositoriesDao.Properties.UserRemoteId.eq(query))
                     .buildDelete()
                     .executeDeleteWithoutDetachingEntities();
         } catch (Exception e) {

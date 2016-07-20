@@ -1,7 +1,9 @@
 package com.softdesign.devintensive.data.storage.models;
 
 
+import com.softdesign.devintensive.data.manager.DataManager;
 import com.softdesign.devintensive.data.network.res.UserListRes;
+import com.softdesign.devintensive.ui.activities.UserListActivity;
 
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
@@ -36,6 +38,9 @@ public class User {
     private int rating;
     private int codeLines;
     private int projects;
+    private int sortPosition;
+
+    private boolean sort;
 
     private String bio;
     @ToMany(joinProperties = {
@@ -52,6 +57,8 @@ public class User {
         this.codeLines = userRes.getProfileValues().getLinesCode();
         this.projects = userRes.getProfileValues().getProjects();
         this.bio = userRes.getPublicInfo().getBio();
+        this.sort = true;
+        this.sortPosition = DataManager.sNumberInBd++;
     }
 
     /**
@@ -180,10 +187,27 @@ public class User {
     public void setId(Long id) {
         this.id = id;
     }
-    @Generated(hash = 1287262988)
-    public User(Long id, @NotNull String remoteId, @NotNull String fullName,
-            String photo, @NotNull String searchName, int rating, int codeLines,
-            int projects, String bio) {
+
+    public boolean getSort() {
+        return this.sort;
+    }
+
+    public void setSort(boolean sort) {
+        this.sort = sort;
+    }
+
+    public int getSortPosition() {
+        return this.sortPosition;
+    }
+
+
+    public void setSortPosition(int sortPosition) {
+        this.sortPosition = sortPosition;
+    }
+    @Generated(hash = 897847713)
+    public User(Long id, @NotNull String remoteId, @NotNull String fullName, String photo,
+            @NotNull String searchName, int rating, int codeLines, int projects, int sortPosition,
+            boolean sort, String bio) {
         this.id = id;
         this.remoteId = remoteId;
         this.fullName = fullName;
@@ -192,8 +216,11 @@ public class User {
         this.rating = rating;
         this.codeLines = codeLines;
         this.projects = projects;
+        this.sortPosition = sortPosition;
+        this.sort = sort;
         this.bio = bio;
     }
+
     @Generated(hash = 586692638)
     public User() {
     }
