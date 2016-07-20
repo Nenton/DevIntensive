@@ -15,7 +15,6 @@ public class PreferencesManager {
     private static final String[] USER_FIELDS = {ConstantManager.USER_PHONE_KEY,
             ConstantManager.USER_EMAIL_KEY,
             ConstantManager.USER_VK_KEY,
-//            ConstantManager.USER_GIT_KEY,
             ConstantManager.USER_ABOUT_KEY,
             ConstantManager.USER_RATING_VALUE,
             ConstantManager.USER_CODE_LINES_VALUE,
@@ -24,11 +23,6 @@ public class PreferencesManager {
             ConstantManager.USER_AVATAR_KEY,
             ConstantManager.USER_FULL_NAME_KEY
     };
-//    private static final String[] USER_VALUES = {
-//            ConstantManager.USER_RATING_VALUE,
-//            ConstantManager.USER_CODE_LINES_VALUE,
-//            ConstantManager.USER_PROJECT_VALUE
-//    };
 
 
     private SharedPreferences mSharedPreferences;
@@ -61,7 +55,6 @@ public class PreferencesManager {
         list.add(mSharedPreferences.getString(ConstantManager.USER_PHONE_KEY, ConstantManager.FIRST_FIELD_PHONE));
         list.add(mSharedPreferences.getString(ConstantManager.USER_EMAIL_KEY, ConstantManager.FIRST_FIELD_EMAIL));
         list.add(mSharedPreferences.getString(ConstantManager.USER_VK_KEY, ConstantManager.FIRST_FIELD_VK));
-//        list.add(mSharedPreferences.getString(ConstantManager.USER_GIT_KEY, ConstantManager.FIRST_FIELD_GIT));
         list.add(mSharedPreferences.getString(ConstantManager.USER_ABOUT_KEY, ConstantManager.FIRST_FIELD_ABOUT));
         list.add(mSharedPreferences.getString(ConstantManager.USER_RATING_VALUE, ConstantManager.FIRST_FIELD_ABOUT));
         list.add(mSharedPreferences.getString(ConstantManager.USER_CODE_LINES_VALUE, ConstantManager.FIRST_FIELD_ABOUT));
@@ -124,40 +117,6 @@ public class PreferencesManager {
         return mSharedPreferences.getString(ConstantManager.USER_ID_KEY, ConstantManager.NULL_STRING);
     }
 
-//    public void saveUserProfileValues(int[] userValues) {
-//        SharedPreferences.Editor editor = mSharedPreferences.edit();
-//        for (int i = 0; i < USER_VALUES.length; i++) {
-//            editor.putString(USER_VALUES[i], String.valueOf(userValues[i]));
-//        }
-//        editor.apply();
-//    }
-
-//    public List<String> loadUserProfileValues() {
-//        List<String> listValues = new ArrayList<>();
-//        listValues.add(mSharedPreferences.getString(ConstantManager.USER_RATING_VALUE, "0"));
-//        listValues.add(mSharedPreferences.getString(ConstantManager.USER_CODE_LINES_VALUE, "0"));
-//        listValues.add(mSharedPreferences.getString(ConstantManager.USER_PROJECT_VALUE, "0"));
-//        return listValues;
-//    }
-//
-//    public void saveFullNameUser(String firstName, String secondName) {
-//        SharedPreferences.Editor editor = mSharedPreferences.edit();
-//        editor.putString(ConstantManager.USER_FIRST_NAME_KEY, firstName);
-//        editor.putString(ConstantManager.USER_SECOND_NAME_KEY, secondName);
-//        editor.apply();
-//    }
-
-//    public String loadFullNameUser() {
-//        return mSharedPreferences.getString(ConstantManager.USER_FIRST_NAME_KEY, ConstantManager.NULL_STRING) +
-//                mSharedPreferences.getString(ConstantManager.USER_SECOND_NAME_KEY, ConstantManager.NULL_STRING);
-//    }
-
-//    public void saveEmailAuthActivity(String email) {
-//        SharedPreferences.Editor editor = mSharedPreferences.edit();
-//        editor.putString(ConstantManager.LOAD_EMAIL_AUTH_KEY, email);
-//        editor.apply();
-//    }
-//
     public String getEmail() {
         return mSharedPreferences.getString(ConstantManager.USER_EMAIL_KEY, "");
     }
@@ -166,7 +125,4 @@ public class PreferencesManager {
         return mSharedPreferences.getString(ConstantManager.USER_FULL_NAME_KEY, "");
     }
 
-//    public void saveGitArray(ArrayList<UserModelRes.Repo> repos) {
-//
-//    }
 }

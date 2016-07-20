@@ -2,6 +2,7 @@ package com.softdesign.devintensive.ui.activities;
 
 import android.content.Intent;
 import android.graphics.Canvas;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
@@ -11,7 +12,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -38,7 +38,8 @@ import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AvatarRounded;
 import com.softdesign.devintensive.utils.ConstantManager;
-import com.softdesign.devintensive.utils.QueryInBd;
+import com.softdesign.devintensive.utils.QueryInBdCustomUser;
+import com.softdesign.devintensive.utils.UpdateUserInBd;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -51,9 +52,9 @@ import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Response;
 
-public class UserListActivity extends BaseActivity implements SearchView.OnQueryTextListener {
+public class CustomSortListActivity extends BaseActivity implements SearchView.OnQueryTextListener {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "User List Activity";
+    private static final String TAG = ConstantManager.TAG_PREFIX + "CustomSort Activity";
 
     @BindView(R.id.users_coordinator_layout)
     CoordinatorLayout mCoordinatorLayout;
@@ -66,16 +67,14 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     SearchView searchView;
     private DataManager mDataManager;
     private static String sQueryString;
+
     private static int sPositionItemUser = 0;
     private Handler mHandler;
-
     private ChronosConnector mChronosConnector;
     private List<User> mUsers;
     private UsersAdapter usersAdapter;
     private RepositoriesDao mRepositoriesDao;
     private UserDao mUserDao;
-
-
 
     @Override
     protected void onResume() {
@@ -93,19 +92,6 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     protected void onPause() {
         mChronosConnector.onPause();
         super.onPause();
-    }
-
-
-    /**
-     * Exit from navbar and from app
-     */
-    @Override
-    public void onBackPressed() {
-        if (mDrawerLayout != null && mDrawerLayout.isDrawerVisible(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
 
 
@@ -129,19 +115,38 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         setupSwipe();
 
         if (sQueryString == null || sQueryString.isEmpty()) {
-            mChronosConnector.runOperation(new QueryInBd(), true);
+            mChronosConnector.runOperation(new QueryInBdCustomUser(), true);
         } else {
             showUserByQuery(sQueryString, 0);
         }
-
     }
 
     private void setupSwipe() {
-        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
 
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false;
+                final int fromPosition = viewHolder.getAdapterPosition();
+                final int toPosition = target.getAdapterPosition();
+                User prev = mUsers.remove(fromPosition);
+                mUsers.add(toPosition, prev);
+                if (toPosition > fromPosition) {
+                    mChronosConnector.runOperation(new UpdateUserInBd(prev.getRemoteId(), true, toPosition), true);
+//                    mDataManager.updateUser(prev.getRemoteId(), true, toPosition);
+                    for (int i = fromPosition; i < toPosition; i++) {
+                        mChronosConnector.runOperation(new UpdateUserInBd(mUsers.get(i).getRemoteId(), true, i), true);
+//                        mDataManager.updateUser(mUsers.get(i).getRemoteId(), true, i);
+                    }
+                } else {
+                    mChronosConnector.runOperation(new UpdateUserInBd(prev.getRemoteId(), true, toPosition), true);
+//                    mDataManager.updateUser(prev.getRemoteId(), true, toPosition);
+                    for (int i = toPosition + 1; i < fromPosition + 1; i++) {
+                        mChronosConnector.runOperation(new UpdateUserInBd(mUsers.get(i).getRemoteId(), true, i), true);
+//                        mDataManager.updateUser(mUsers.get(i).getRemoteId(), true, i);
+                    }
+                }
+                usersAdapter.notifyItemMoved(fromPosition, toPosition);
+                return true;
             }
 
             @Override
@@ -152,29 +157,29 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 User user = mUsers.get(viewHolder.getAdapterPosition());
-                mDataManager.updateUser(user.getRemoteId(), true, user.getSortPosition());
+                mDataManager.updateUser(user.getRemoteId(), false, user.getSortPosition());
+                int position = viewHolder.getAdapterPosition();
+                mUsers.remove(position);
+                usersAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
-
         };
         ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(simpleCallback);
         mItemTouchHelper.attachToRecyclerView(mRecyclerView);
-
     }
 
-
-    public void onOperationFinished(final QueryInBd.Result users) {
+    public void onOperationFinished(final QueryInBdCustomUser.Result users) {
         mUsers = users.getOutput();
         usersAdapter = new UsersAdapter(mUsers, new UsersAdapter.UserViewHolder.CustomClickListener() {
             @Override
             public void onUserItemClickListener(int position) {
                 sPositionItemUser = position;
                 UserDTO userProfile = new UserDTO(mUsers.get(position));
-                Intent userIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
+                Intent userIntent = new Intent(CustomSortListActivity.this, ProfileUserActivity.class);
                 userIntent.putExtra(ConstantManager.PARCELABLER_KEY, userProfile);
                 startActivity(userIntent);
             }
@@ -211,20 +216,20 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
             public boolean onNavigationItemSelected(MenuItem item) {
                 switch (item.getTitle().toString()) {
                     case ConstantManager.MENU_ITEM_MY_PROFILE:
-                        Intent intent = new Intent(UserListActivity.this, MainActivity.class);
+                        Intent intent = new Intent(CustomSortListActivity.this, MainActivity.class);
                         startActivity(intent);
                         break;
                     case ConstantManager.MENU_ITEM_TEAM:
-                        Intent intentTeem = new Intent(UserListActivity.this, CustomSortListActivity.class);
-                        startActivity(intentTeem);
                         break;
                     case ConstantManager.MENU_ITEM_RATING:
+                        Intent intentRating = new Intent(CustomSortListActivity.this, UserListActivity.class);
+                        startActivity(intentRating);
                         break;
                     case ConstantManager.MENU_ITEM_REFRESH:
                         refreshBd();
                         break;
                     case ConstantManager.MENU_ITEM_EXIT:
-                        Intent startActivity = new Intent(UserListActivity.this,AuthActivity.class);
+                        Intent startActivity = new Intent(CustomSortListActivity.this, AuthActivity.class);
                         mDataManager.getPreferencesManager().saveAuthToken(null);
                         mDataManager.getPreferencesManager().saveUserId(null);
                         startActivity(startActivity);
@@ -326,6 +331,18 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         }
     }
 
+    /**
+     * Exit from navbar and from app
+     */
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout != null && mDrawerLayout.isDrawerVisible(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search_menu, menu);
@@ -346,7 +363,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                mChronosConnector.runOperation(new QueryInBd(), true);
+                mChronosConnector.runOperation(new QueryInBdCustomUser(), true);
                 sQueryString = null;
                 return true;
             }
@@ -378,7 +395,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
             @Override
             public void run() {
                 sQueryString = query;
-                mChronosConnector.runOperation(new QueryInBd(query), true);
+                mChronosConnector.runOperation(new QueryInBdCustomUser(query), true);
             }
         };
         mHandler.removeCallbacks(runnable);

@@ -28,8 +28,6 @@ public class ServiceGenerator {
         httpClient.cache(new Cache(DevIntensiveApplication.getContext().getCacheDir(),Integer.MAX_VALUE));
         httpClient.addNetworkInterceptor(new StethoInterceptor());
 
-        // TODO: 16.07.2016 35 минута видео поставить таймауты
-
         Retrofit retrofit = sBuilder
                 .client(httpClient.build())
                 .build();

@@ -30,7 +30,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -51,13 +53,16 @@ import com.softdesign.devintensive.data.manager.validators.UrlChecker;
 import com.softdesign.devintensive.data.manager.validators.ValidationSummary;
 import com.softdesign.devintensive.data.network.res.UploadAvatarUser;
 import com.softdesign.devintensive.data.network.res.UploadPhotoUser;
+import com.softdesign.devintensive.data.network.res.UserListRes;
+import com.softdesign.devintensive.data.storage.models.Repositories;
+import com.softdesign.devintensive.data.storage.models.RepositoriesDao;
+import com.softdesign.devintensive.data.storage.models.User;
+import com.softdesign.devintensive.data.storage.models.UserDao;
 import com.softdesign.devintensive.ui.adapters.RepositoriesAdapter;
 import com.softdesign.devintensive.utils.AvatarRounded;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -116,6 +121,23 @@ public class MainActivity extends BaseActivity {
     private TextView mUserName;
     private TextView mUserEmail;
     private Float aFloat;
+    private RepositoriesDao mRepositoriesDao;
+    private UserDao mUserDao;
+    private static int mWidthWindows;
+
+    public static int getmWidthWindows() {
+        return mWidthWindows;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
 
     /**
      * @param savedInstanceState save instance
@@ -127,6 +149,12 @@ public class MainActivity extends BaseActivity {
         ButterKnife.bind(this);
         mDataManager = DataManager.getInstanse();
         aFloat = getResources().getDisplayMetrics().density;
+
+        Display display = getWindowManager().getDefaultDisplay();
+        DisplayMetrics metricsB = new DisplayMetrics();
+        display.getMetrics(metricsB);
+        mWidthWindows = metricsB.widthPixels;
+
         setupToolbar();
         initDrawer();
         initUserFields();
@@ -183,17 +211,24 @@ public class MainActivity extends BaseActivity {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
                 switch (item.getTitle().toString()) {
-                    case "Мой профиль":
+                    case ConstantManager.MENU_ITEM_MY_PROFILE:
                         break;
-                    case "Команда":
+                    case ConstantManager.MENU_ITEM_TEAM:
+                        Intent intentCustom = new Intent(MainActivity.this, CustomSortListActivity.class);
+                        startActivity(intentCustom);
                         break;
-                    case "Рейтинг":
+                    case ConstantManager.MENU_ITEM_RATING:
                         Intent intent = new Intent(MainActivity.this, UserListActivity.class);
                         startActivity(intent);
                         break;
-                    case "Обновить":
+                    case ConstantManager.MENU_ITEM_REFRESH:
+                        refreshBd();
                         break;
-                    case "Выход":
+                    case ConstantManager.MENU_ITEM_EXIT:
+                        Intent startActivity = new Intent(MainActivity.this,AuthActivity.class);
+                        mDataManager.getPreferencesManager().saveAuthToken(null);
+                        mDataManager.getPreferencesManager().saveUserId(null);
+                        startActivity(startActivity);
                         break;
                 }
                 item.setCheckable(true);
@@ -206,6 +241,49 @@ public class MainActivity extends BaseActivity {
         mUserEmail = (TextView) navigationView.getHeaderView(ConstantManager.NULL).findViewById(R.id.user_mail_nav);
     }
 
+    private void refreshBd(){
+        Call<UserListRes> call = mDataManager.getListUserFromNetwork();
+        call.enqueue(new Callback<UserListRes>() {
+            @Override
+            public void onResponse(Call<UserListRes> call, Response<UserListRes> response) {
+                try {
+                    if (response.code() == 200) {
+                        List<Repositories> allRepositories = new ArrayList<Repositories>();
+                        List<User> allUsers = new ArrayList<User>();
+                        mUserDao = mDataManager.getDaoSession().getUserDao();
+                        mRepositoriesDao = mDataManager.getDaoSession().getRepositoriesDao();
+                        for (UserListRes.Datum userRes : response.body().getData()) {
+                            allRepositories.addAll(getRepoListFromUserRes(userRes));
+                            allUsers.add(new User(userRes));
+                        }
+                        mRepositoriesDao.insertOrReplaceInTx(allRepositories);
+                        mUserDao.insertOrReplaceInTx(allUsers);
+                    } else {
+                        Snackbar.make(mNavigationDrawer, ConstantManager.LIST_USER_NOT_CAN_GET, Snackbar.LENGTH_LONG).show();
+                    }
+
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                    Snackbar.make(mNavigationDrawer, ConstantManager.STANDART_ERROR_MESSAGE, Snackbar.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserListRes> call, Throwable t) {
+                Snackbar.make(mNavigationDrawer, ConstantManager.STANDART_ERROR_MESSAGE, Snackbar.LENGTH_LONG).show();
+            }
+
+        });
+    }
+
+    private List<Repositories> getRepoListFromUserRes(UserListRes.Datum userData) {
+        final String userId = userData.getId();
+        List<Repositories> repositories = new ArrayList<>();
+        for (UserListRes.Repo repositoryRes : userData.getRepositories().getRepo()) {
+            repositories.add(new Repositories(repositoryRes, userId));
+        }
+        return repositories;
+    }
 
     @OnClick(R.id.fab)
     void editMode() {
@@ -436,7 +514,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void loadPhotoFromGallery() {
+    protected void loadPhotoFromGallery() {
         Intent takeGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         takeGalleryIntent.setType(ConstantManager.TYPE_IMAGE_GALLERY);
         startActivityForResult(Intent.createChooser(takeGalleryIntent, getString(R.string.set_photo_from_gallery)), ConstantManager.REQUEST_GALLERY_PICTURE);
@@ -445,7 +523,7 @@ public class MainActivity extends BaseActivity {
     /**
      * Load photo from camera
      */
-    private void loadPhotoFromCamera() {
+    protected void loadPhotoFromCamera() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent intentStartCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -453,7 +531,6 @@ public class MainActivity extends BaseActivity {
                 mPhotoFile = createImageFile();
             } catch (IOException e) {
                 e.printStackTrace();
-                // TODO: 30.06.2016 Обработка ошибок связанных с чтением
             }
             if (mPhotoFile != null) {
                 intentStartCamera.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
@@ -475,6 +552,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+
     private void uploadPhoto(Uri uri) {
         File file = new File(getFilePathCorrect(uri));
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -488,7 +566,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<UploadPhotoUser> call, Throwable t) {
-                Log.e("Неудача", "");
+                Log.e(ConstantManager.STANDART_ERROR_MESSAGE, "");
             }
         });
     }
@@ -516,10 +594,8 @@ public class MainActivity extends BaseActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == ConstantManager.CAMERA_REQUEST_PERMISSION_CODE && grantResults.length == 2) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // TODO: 30.06.2016 Тут обрабатываем разрешения (разрешение получено) например вывести сообщение
             }
             if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                // TODO: 30.06.2016 Тут обрабатываем разрешения (разрешение получено) например вывести сообщение
             }
         }
     }
@@ -546,15 +622,15 @@ public class MainActivity extends BaseActivity {
      * @param UriImage Selected image for load in user photo place
      */
     private void insertProfileImage(final Uri UriImage) {
-        Picasso.with(this)
+        mDataManager.getPicasso()
                 .load(UriImage)
                 .centerCrop()
-                .resize((int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat * 1.73), (int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat))
+                .resize((int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat * ConstantManager.KOFF_PROPORTION_SIZE), (int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat))
                 .networkPolicy(NetworkPolicy.OFFLINE)
                 .into(mProfileImage, new com.squareup.picasso.Callback() {
                     @Override
                     public void onSuccess() {
-                        Log.d(TAG, " load photo from cache");
+                        Log.d(TAG, ConstantManager.LOAD_FROM_CACHE + " photo");
                     }
 
                     @Override
@@ -562,7 +638,7 @@ public class MainActivity extends BaseActivity {
                         Picasso.with(MainActivity.this)
                                 .load(UriImage)
                                 .centerCrop()
-                                .resize((int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat * 1.73), (int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat))
+                                .resize((int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat * ConstantManager.KOFF_PROPORTION_SIZE), (int) (getResources().getDimension(R.dimen.profile_image_size) * aFloat))
                                 .into(mProfileImage, new com.squareup.picasso.Callback() {
                                     @Override
                                     public void onSuccess() {
@@ -571,7 +647,7 @@ public class MainActivity extends BaseActivity {
 
                                     @Override
                                     public void onError() {
-                                        Log.d(TAG, " error load photo from cache");
+                                        Log.d(TAG, ConstantManager.ERROR_LOAD_FROM_CACHE + " photo");
                                     }
                                 });
                     }
@@ -584,6 +660,7 @@ public class MainActivity extends BaseActivity {
      * @param resultCode  code result
      * @param data        data
      */
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -596,6 +673,7 @@ public class MainActivity extends BaseActivity {
                 break;
             case ConstantManager.REQUEST_CAMERA_PICTURE:
                 if (resultCode == RESULT_OK && mPhotoFile != null) {
+                    uploadPhoto(Uri.fromFile(mPhotoFile));
                     performCrop(Uri.fromFile(mPhotoFile));
                     insertProfileImage(Uri.fromFile(mPhotoFile));
                 }
@@ -632,7 +710,7 @@ public class MainActivity extends BaseActivity {
 
     private void getImageUri(Context inContext, Bitmap inImage) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        inImage.compress(Bitmap.CompressFormat.JPEG, ConstantManager.QUALITY_BITMAP_AVATAR, bytes);
         String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
         Uri mUri = Uri.parse(path);
         loadAvatar(mUri);
@@ -640,7 +718,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void loadAvatar(final Uri picUri) {
-        Picasso.with(this)
+        mDataManager.getPicasso()
                 .load(picUri)
                 .placeholder(R.drawable.avatar)
                 .transform(new AvatarRounded())
@@ -648,7 +726,7 @@ public class MainActivity extends BaseActivity {
                 .into(mAvatarImage, new com.squareup.picasso.Callback() {
                     @Override
                     public void onSuccess() {
-                        Log.d(TAG, " load avatar from cache");
+                        Log.d(TAG, ConstantManager.LOAD_FROM_CACHE + " avatar");
                     }
 
                     @Override
@@ -665,7 +743,7 @@ public class MainActivity extends BaseActivity {
 
                                     @Override
                                     public void onError() {
-                                        Log.d(TAG, " error load avatar from cache");
+                                        Log.d(TAG, ConstantManager.ERROR_LOAD_FROM_CACHE + " avatar");
                                     }
                                 });
                     }
@@ -707,5 +785,4 @@ public class MainActivity extends BaseActivity {
     private void showSnackBar(String message) {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
-
 }

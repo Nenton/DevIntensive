@@ -219,7 +219,7 @@ public class UserModelRes {
             return publicInfo;
         }
         public String getFullName(){
-            return firstName + secondName;
+            return firstName + " " + secondName;
         }
 
     }

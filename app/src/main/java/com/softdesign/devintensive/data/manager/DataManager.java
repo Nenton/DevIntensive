@@ -22,6 +22,8 @@ import com.softdesign.devintensive.data.storage.models.UserDao;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.squareup.picasso.Picasso;
 
+import org.greenrobot.greendao.query.Query;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,6 +108,18 @@ public class DataManager {
     }
 
     //end region
+
+    public Long getUser() {
+        Long user = null;
+        try {
+            user = mDaoSession.getUserDao().count();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
     public List<User> getUserListFromDb() {
         List<User> userList = new ArrayList<>();
         try {
@@ -121,20 +135,6 @@ public class DataManager {
         return userList;
     }
 
-    public void deleteUser(String query) {
-        try {
-            mDaoSession.queryBuilder(User.class)
-                    .where(UserDao.Properties.RemoteId.eq(query))
-                    .buildDelete()
-                    .executeDeleteWithoutDetachingEntities();
-            mDaoSession.queryBuilder(Repositories.class)
-                    .where(RepositoriesDao.Properties.UserRemoteId.eq(query))
-                    .buildDelete()
-                    .executeDeleteWithoutDetachingEntities();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public List<User> getUserListByName(String query) {
         List<User> userList = new ArrayList<>();
@@ -142,6 +142,36 @@ public class DataManager {
             userList = mDaoSession.queryBuilder(User.class)
                     .where(UserDao.Properties.Rating.gt(0), UserDao.Properties.SearchName.like("%" + query.toUpperCase() + "%"))
                     .orderDesc(UserDao.Properties.Rating)
+                    .build()
+                    .list();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return userList;
+    }
+
+    public List<User> getUserCustom() {
+        List<User> userList = new ArrayList<>();
+        try {
+            userList = mDaoSession.queryBuilder(User.class)
+                    .where(UserDao.Properties.Sort.eq(true))
+                    .orderAsc(UserDao.Properties.SortPosition)
+                    .build()
+                    .list();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return userList;
+    }
+
+
+    public List<User> getUserCustomByName(String query) {
+        List<User> userList = new ArrayList<>();
+        try {
+            userList = mDaoSession.queryBuilder(User.class)
+                    .where(UserDao.Properties.Sort.eq(true), UserDao.Properties.SearchName.like("%" + query.toUpperCase() + "%"))
+                    .orderAsc(UserDao.Properties.SortPosition)
                     .build()
                     .list();
         } catch (Exception e) {
@@ -161,5 +191,34 @@ public class DataManager {
             e.printStackTrace();
         }
         return userProfileValues;
+    }
+
+
+    public void updateUser (String string, Boolean sort, int sortPosition) {
+        try {
+            User user = mDaoSession.queryBuilder(User.class)
+                    .where(UserDao.Properties.RemoteId.eq(string))
+                    .build()
+                    .unique();
+            mDaoSession.update(new User(user,sort,sortPosition));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteUser(String query) {
+        try {
+            mDaoSession.queryBuilder(User.class)
+                    .where(UserDao.Properties.RemoteId.eq(query))
+                    .buildDelete()
+                    .executeDeleteWithoutDetachingEntities();
+            mDaoSession.queryBuilder(Repositories.class)
+                    .where(RepositoriesDao.Properties.UserRemoteId.eq(query))
+                    .buildDelete()
+                    .executeDeleteWithoutDetachingEntities();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

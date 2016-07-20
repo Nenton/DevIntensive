@@ -3,11 +3,14 @@ package com.softdesign.devintensive.ui.activities;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -21,6 +24,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.RepositoriesAdapter;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.QueryInBdCustomUser;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -46,9 +50,15 @@ public class ProfileUserActivity extends AppCompatActivity {
     TextView mUserProjects;
     @BindView(R.id.repositories_list)
     ListView mRepositoriesView;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        finish();
+    }
+
     @BindView(R.id.collapsing_toolbar_user_profile)
     CollapsingToolbarLayout mCollapsingToolbarLayout;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +79,6 @@ public class ProfileUserActivity extends AppCompatActivity {
 
     private void initProfileData() {
         final UserDTO userDTO = getIntent().getParcelableExtra(ConstantManager.PARCELABLER_KEY);
-
         final List<String> repositories = userDTO.getRepositories();
         final RepositoriesAdapter repositoriesAdapter = new RepositoriesAdapter(this, repositories);
 
@@ -79,8 +88,8 @@ public class ProfileUserActivity extends AppCompatActivity {
         mUserRating.setText(userDTO.getRating());
         mUserCodeLines.setText(userDTO.getCodeLines());
         mUserProjects.setText(userDTO.getProject());
-
         mCollapsingToolbarLayout.setTitle(userDTO.getFullName());
+
         Picasso.with(this)
                 .load(userDTO.getPhoto())
                 .error(R.drawable.profile_photo)
@@ -89,7 +98,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                 .into(mUserProfileImage, new Callback() {
                     @Override
                     public void onSuccess() {
-                        Log.d(TAG, " load photo from cache");
+                        Log.d(TAG, ConstantManager.LOAD_FROM_CACHE);
                     }
 
                     @Override
@@ -106,7 +115,7 @@ public class ProfileUserActivity extends AppCompatActivity {
 
                                     @Override
                                     public void onError() {
-                                        Log.d(TAG, " error load photo from cache");
+                                        Log.d(TAG, ConstantManager.ERROR_LOAD_FROM_CACHE);
                                     }
                                 });
                     }

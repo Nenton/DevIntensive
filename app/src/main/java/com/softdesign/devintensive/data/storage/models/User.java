@@ -38,6 +38,7 @@ public class User {
     private int rating;
     private int codeLines;
     private int projects;
+
     private int sortPosition;
 
     private boolean sort;
@@ -57,8 +58,22 @@ public class User {
         this.codeLines = userRes.getProfileValues().getLinesCode();
         this.projects = userRes.getProfileValues().getProjects();
         this.bio = userRes.getPublicInfo().getBio();
-        this.sort = true;
+        this.sort = false;
         this.sortPosition = DataManager.sNumberInBd++;
+    }
+
+    public User(User user, Boolean sort, int sortPosition) {
+        this.id = user.getId();
+        this.remoteId = user.getRemoteId();
+        this.photo = user.getPhoto();
+        this.fullName = user.getFullName();
+        this.searchName = user.getFullName().toUpperCase();
+        this.rating = user.getRating();
+        this.codeLines = user.getCodeLines();
+        this.projects = user.getProjects();
+        this.bio = user.getBio();
+        this.sort = sort;
+        this.sortPosition = sortPosition;
     }
 
     /**

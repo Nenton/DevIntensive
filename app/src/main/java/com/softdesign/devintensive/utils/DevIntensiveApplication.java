@@ -25,7 +25,7 @@ public class DevIntensiveApplication extends Application{
         super.onCreate();
         sContext = this;
         sSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-       DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this,"devintensive-db");
+       DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this,ConstantManager.NAME_BD);
         Database database = helper.getWritableDb();
         sDaoSession = new DaoMaster(database).newSession();
 

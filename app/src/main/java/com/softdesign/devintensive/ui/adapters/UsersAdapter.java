@@ -18,8 +18,10 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.manager.DataManager;
 import com.softdesign.devintensive.data.network.res.UserListRes;
 import com.softdesign.devintensive.data.storage.models.User;
+import com.softdesign.devintensive.ui.activities.MainActivity;
 import com.softdesign.devintensive.ui.activities.UserListActivity;
 import com.softdesign.devintensive.ui.views.AspectRatioImageView;
+import com.softdesign.devintensive.utils.ConstantManager;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -30,10 +32,13 @@ import java.util.List;
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
 
     private static final String TAG = "UsersAdapter";
+    private final String ERROR_MESSAGE = "onBindViewHolder: user with name ";
+    private final String EMPTY_NAME_ERROR = "has empty name";
+    private final double PROPORTION_HEIGHT_WIDTH = 1.73;
+
     private Context mContext;
     private List<User> mUsers;
     private UserViewHolder.CustomClickListener mCustomClickListener;
-    private Display display;
 
     public UsersAdapter(List<User> users, UserViewHolder.CustomClickListener customClickListener) {
         mUsers = users;
@@ -53,8 +58,8 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
         final String userPhoto;
         if (user.getPhoto().isEmpty()) {
-            userPhoto = "null";
-            Log.e(TAG, "onBindViewHolder: user with name " + user.getFullName() + "has empty name");
+            userPhoto = ConstantManager.NULL_STRING;
+            Log.e(TAG, ERROR_MESSAGE + user.getFullName() + EMPTY_NAME_ERROR);
         } else {
             userPhoto = user.getPhoto();
         }
@@ -63,13 +68,13 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
                     .load(userPhoto)
                     .placeholder(holder.mUserCachePhoto)
                     .error(holder.mUserCachePhoto)
-                    .resize(UserListActivity.getmWidthWindows(), (int) (UserListActivity.getmWidthWindows() / 1.73))
+                    .resize(MainActivity.getmWidthWindows(), (int) (MainActivity.getmWidthWindows() / PROPORTION_HEIGHT_WIDTH))
                     .centerCrop()
                     .networkPolicy(NetworkPolicy.OFFLINE)
                     .into(holder.userPhoto, new Callback() {
                         @Override
                         public void onSuccess() {
-                            Log.d(TAG, " load from cache");
+                            Log.d(TAG, ConstantManager.LOAD_FROM_CACHE);
                         }
 
                         @Override
@@ -78,7 +83,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
                                     .load(userPhoto)
                                     .placeholder(holder.mUserCachePhoto)
                                     .error(holder.mUserCachePhoto)
-                                    .resize(UserListActivity.getmWidthWindows(), (int) (UserListActivity.getmWidthWindows() / 1.73))
+                                    .resize(MainActivity.getmWidthWindows(), (int) (MainActivity.getmWidthWindows() / PROPORTION_HEIGHT_WIDTH))
                                     .centerCrop()
                                     .into(holder.userPhoto, new Callback() {
                                         @Override
@@ -88,7 +93,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
                                         @Override
                                         public void onError() {
-                                            Log.d(TAG, " load from cache");
+                                            Log.d(TAG, ConstantManager.LOAD_FROM_CACHE);
                                         }
                                     });
                         }
@@ -105,8 +110,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             holder.mBio.setText(user.getBio());
         }
     }
-
-
 
     @Override
     public int getItemCount() {
