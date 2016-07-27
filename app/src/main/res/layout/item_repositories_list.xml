@@ -11,11 +11,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/github_text_layout"
-            android:layout_marginRight="@dimen/spacing_larger_72"
             android:layout_centerVertical="true"
             >
             <EditText
                 android:id="@+id/github"
+                android:layout_marginRight="@dimen/spacing_larger_72"
+                android:layout_height="match_parent"
+                android:maxLines="1"
+                android:textSize="@dimen/font_small_14"
                 style="@style/text"
                 android:hint="@string/repos_hint"/>
 

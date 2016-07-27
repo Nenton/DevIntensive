@@ -47,6 +47,10 @@ public class UserListRes {
         @Expose
         public String title;
 
+        public String getId() {
+            return id;
+        }
+
         public String getGit() {
             return git;
         }
@@ -115,22 +119,27 @@ public class UserListRes {
 
     public class Datum {
 
+        public String getId() {
+            return id;
+        }
+
         @SerializedName("_id")
+
         @Expose
         public String id;
         @SerializedName("first_name")
         @Expose
         public String firstName;
 
-        public String getFirstName() {
-            return firstName;
-        }
+//        public String getFirstName() {
+//            return firstName;
+//        }
+//
+//        public String getSecondName() {
+//            return secondName;
+//        }
 
-        public String getSecondName() {
-            return secondName;
-        }
-
-        public String getFullName(){
+        public String getFullName() {
             return firstName + " " + secondName;
         }
 

@@ -69,7 +69,6 @@
             android:src="@drawable/ic_create_black_24dp"
             app:layout_anchor="@id/app_bar"
             app:layout_anchorGravity="bottom|right"/>
-
     </android.support.design.widget.CoordinatorLayout>
 
     <android.support.design.widget.NavigationView

@@ -5,16 +5,23 @@
         android:id="@+id/profile_user_item"
         android:icon="@drawable/ic_account_circle_black_24dp"
         android:checkable="true"
-        android:title="Мой профиль"/>
+        android:title="@string/my_profile"/>
     <item
         android:id="@+id/team_our_item"
         android:icon="@drawable/ic_people_black_24dp"
         android:checkable="true"
-        android:title="Команда"/>
+        android:title="@string/team"/>
     <item
         android:id="@+id/rating_user_item"
         android:icon="@drawable/ic_format_list_numbered_black_24dp"
         android:checkable="true"
-        android:title="Рейтинг"/>
-</group>
+        android:title="@string/rating"/>
+    <item
+        android:checkable="false"
+        android:title="@string/refresh"/>
+    <item
+        android:id="@+id/exit_app"
+        android:checkable="true"
+        android:title="@string/exit"/>
+    </group>
 </menu>

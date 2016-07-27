@@ -4,12 +4,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="112dp"
+    android:layout_height="@dimen/spacing_larger_72"
     android:background="@color/color_primary"
-    android:orientation="horizontal"
     android:gravity="center"
-    app:layout_behavior=".ui.behaviors.FancyBehavior"
-    app:behavior_min_height="56dp">
+    android:orientation="horizontal"
+    app:behavior_min_height="56dp"
+    app:layout_behavior=".ui.behaviors.FancyBehavior">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -24,14 +24,15 @@
             android:layout_width="match_parent"
             android:gravity="bottom|center_horizontal"
             android:text="51"
-            android:textSize="20dp"/>
+            android:textSize="@dimen/font_medium_20"/>
 
         <TextView
             android:id="@+id/error_two"
             style="@style/margin_tools_bar"
             android:layout_width="match_parent"
             android:gravity="top|center_horizontal"
-            android:text="@string/rating_text"/>
+            android:text="@string/rating_text"
+            android:textSize="@dimen/font_small_14"/>
 
     </LinearLayout>
 
@@ -50,14 +51,15 @@
             android:layout_width="match_parent"
             android:gravity="bottom|center_horizontal"
             android:text="51"
-            android:textSize="20dp"/>
+            android:textSize="@dimen/font_medium_20"/>
 
         <TextView
             android:id="@+id/error"
             style="@style/margin_tools_bar"
             android:layout_width="match_parent"
             android:gravity="top|center_horizontal"
-            android:text="@string/write_code_string_text"/>
+            android:text="@string/write_code_string_text"
+            android:textSize="@dimen/font_small_14"/>
     </LinearLayout>
 
     <View style="@style/divider_vertical"/>
@@ -75,12 +77,13 @@
             android:layout_width="match_parent"
             android:gravity="bottom|center_horizontal"
             android:text="51"
-            android:textSize="20dp"/>
+            android:textSize="@dimen/font_medium_20"/>
 
         <TextView
             style="@style/margin_tools_bar"
             android:layout_width="match_parent"
             android:gravity="top|center_horizontal"
-            android:text="@string/project_text"/>
+            android:text="@string/project_text"
+            android:textSize="@dimen/font_small_14"/>
     </LinearLayout>
 </LinearLayout>

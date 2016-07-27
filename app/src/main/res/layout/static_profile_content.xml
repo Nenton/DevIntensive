@@ -52,6 +52,7 @@
 
                     <EditText
                         android:id="@+id/about_profile_text"
+                        android:textSize="@dimen/font_small_14"
                         style="@style/text"
                         android:hint="@string/about_hint"/>
                 </android.support.design.widget.TextInputLayout>

@@ -4,8 +4,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/grey_transparent"
-                android:visibility="gone"
-    >
+                android:visibility="gone">
 
     <ImageView
         android:id="@+id/photo_placeholder"
@@ -26,5 +25,6 @@
         android:layout_marginBottom="@dimen/spacing_small_8"
         android:fontFamily="sans-serif-medium"
         android:text="@string/edit_photo_profile"
+        android:textSize="@dimen/font_medium_20"
         android:textColor="@color/white"/>
 </RelativeLayout>

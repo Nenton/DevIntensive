@@ -218,6 +218,9 @@ public class UserModelRes {
         public PublicInfo getPublicInfo() {
             return publicInfo;
         }
+        public String getFullName(){
+            return firstName + " " + secondName;
+        }
 
     }
 }

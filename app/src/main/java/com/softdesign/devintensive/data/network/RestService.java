@@ -1,6 +1,7 @@
 package com.softdesign.devintensive.data.network;
 
 import com.softdesign.devintensive.data.network.req.UserLoginReq;
+import com.softdesign.devintensive.data.network.res.UploadAvatarUser;
 import com.softdesign.devintensive.data.network.res.UploadPhotoUser;
 import com.softdesign.devintensive.data.network.res.UserListRes;
 import com.softdesign.devintensive.data.network.res.UserModelRes;
@@ -26,4 +27,9 @@ public interface RestService {
     @POST("user/{userId}/publicValues/profilePhoto")
     Call<UploadPhotoUser> uploadPhoto(@Path("userId") String userId,
                                       @Part MultipartBody.Part file);
+
+    @Multipart
+    @POST("user/{userId}/publicValues/profileAvatar")
+    Call<UploadAvatarUser> uploadAvatar(@Path("userId") String userId,
+                                        @Part MultipartBody.Part file);
 }
