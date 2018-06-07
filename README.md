@@ -12,4 +12,4 @@ Stack:
 - Butter knife
 - Chronos
 
-![UI project](https://s3-us-west-2.amazonaws.com/udacity-profiles/production/projects/10912063222-project-bcfd14d2d131a24f0a1647cb4acc3379.jpeg?t=1528350879126)
+<img src="https://s3-us-west-2.amazonaws.com/udacity-profiles/production/projects/10912063222-project-bcfd14d2d131a24f0a1647cb4acc3379.jpeg?t=1528350879126" width="300">
